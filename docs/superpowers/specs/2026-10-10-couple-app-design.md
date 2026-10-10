@@ -77,7 +77,7 @@ Người dùng tạo các kỷ niệm chung của cặp đôi. Mỗi kỷ niệm
 
 - Tiêu đề, ngày (và giờ nếu có), lời nhắn/ghi chú vài dòng tại thời điểm đó.
 - **Ảnh:** chọn từ thư viện hoặc **chụp trực tiếp, có hoặc không có filter** (bộ filter ban đầu: Gốc, Ấm, Lạnh, Vintage, Đen trắng). Nhiều ảnh, sắp xếp được thứ tự.
-- **Địa điểm** tại thời điểm kỷ niệm (chọn trên bản đồ hoặc dùng vị trí hiện tại) → lưu vào bảng `places` dùng chung với tính năng Địa điểm hẹn hò.
+- **Địa điểm** tại thời điểm kỷ niệm (chọn trên bản đồ hoặc dùng vị trí hiện tại) → lưu vào bảng `places` dùng chung với tính năng Địa điểm hẹn hò. Ở GĐ1, địa điểm được tạo kèm khi tạo/sửa kỷ niệm (`place` mới hoặc `placeId` có sẵn); API quản lý địa điểm riêng thuộc GĐ2.
 - **Nhắc nhở** theo quy tắc của từng loại.
 
 #### Các loại kỷ niệm
@@ -104,12 +104,12 @@ Các mốc và thời điểm ở bảng trên là **mặc định**. Mỗi kỷ
 - **Khôi phục mặc định.**
 
 Tuỳ chỉnh áp dụng **cho kỷ niệm đó** và cho cả hai người trong cặp đôi. Mặc định toàn app (theo loại) chỉnh được trong Cài đặt ở giai đoạn sau.
-- Gợi ý sẵn các dịp tặng quà phổ biến ở VN (14/2, 8/3, 20/10, 24/12, sinh nhật lấy từ hồ sơ) khi ghép đôi; người dùng bật/tắt từng dịp.
+- Gợi ý sẵn các dịp tặng quà phổ biến ở VN (14/2, 8/3, 20/10, 24/12, sinh nhật lấy từ hồ sơ) khi ghép đôi; người dùng bật/tắt từng dịp. Danh sách gợi ý nằm ở app (mobile); bật một dịp = tạo kỷ niệm `GIFT_OCCASION` qua API.
 
 #### Chu kỳ (`CYCLE`) chi tiết
 
 - Chủ thể ghi ngày bắt đầu (và ngày kết thúc nếu muốn) của mỗi kỳ vào `cycle_logs`.
-- Dự đoán kỳ tiếp theo = ngày bắt đầu gần nhất + trung bình độ dài 3–6 chu kỳ gần nhất; nếu chưa đủ 2 kỳ thì mặc định 28 ngày (chủ thể chỉnh được).
+- Dự đoán kỳ tiếp theo = ngày bắt đầu gần nhất + trung bình độ dài 3–6 chu kỳ gần nhất; nếu chưa đủ 2 kỳ thì mặc định 28 ngày (chủ thể chỉnh được qua `PUT /api/cycles/default-length`, lưu ở `user_settings.cycle_length_default`). Khoảng cách giữa hai kỳ ngoài 15–45 ngày bị bỏ qua khi tính trung bình (do quên ghi). Nếu ngày dự đoán đã qua mà chưa ghi kỳ mới, tự lùi tiếp theo chu kỳ trung bình.
 - Chủ thể có thể **tắt chia sẻ** cho đối phương → đối phương không nhận nhắc và không thấy dữ liệu chu kỳ.
 - Dữ liệu chu kỳ là dữ liệu nhạy cảm: chỉ trả về cho chủ thể; đối phương chỉ thấy "ngày dự kiến" nếu được chia sẻ.
 
@@ -214,7 +214,7 @@ PostgreSQL, migration bằng Flyway. Khoá chính `uuid` (sinh ở backend). M�
 ```sql
 users (
   id                      uuid PK,
-  email                   citext UNIQUE NOT NULL,
+  email                   text NOT NULL,         -- lưu chữ thường; UNIQUE INDEX trên lower(email)
   password_hash           text NOT NULL,
   display_name            text NOT NULL,
   avatar_media_id         uuid NULL REFERENCES media(id),
@@ -252,6 +252,7 @@ user_settings (
   user_id uuid PK FK users,
   share_location boolean DEFAULT true,
   share_cycle    boolean DEFAULT true,
+  cycle_length_default int DEFAULT 28,
   notify_prefs   jsonb   DEFAULT '{}'   -- bật/tắt theo loại kỷ niệm
 )
 
@@ -312,7 +313,7 @@ moment_media (
   moment_id uuid FK moments ON DELETE CASCADE,
   media_id  uuid FK media,
   position  int NOT NULL,
-  PRIMARY KEY (moment_id, media_id)
+  PRIMARY KEY (moment_id, position)   -- để đổi thứ tự ảnh không vướng khoá chính
 )
 
 cycle_logs (
@@ -345,8 +346,8 @@ Ví dụ `details` theo loại:
 | `ANNIVERSARY` | `{"milestones": true, "yearly": true}` |
 | `DATE_PLAN` | `{}` |
 | `GIFT_OCCASION` | `{"occasion": "BIRTHDAY" \| "VALENTINE" \| "WOMENS_DAY_8_3" \| "WOMENS_DAY_20_10" \| "CHRISTMAS" \| "OTHER"}` |
-| `CYCLE` | `{"defaultCycleLength": 28}` |
-| `CUSTOM` | `{"notify": "SELF" \| "PARTNER" \| "BOTH", "daysBefore": [3, 0]}` |
+| `CYCLE` | `{}` (độ dài mặc định nằm ở `user_settings.cycle_length_default`) |
+| `CUSTOM` | `{}` (người nhận, mốc nhắc cấu hình qua `reminder_config`) |
 
 `reminder_config` (mọi trường đều tuỳ chọn; trường thiếu → lấy mặc định của handler):
 
@@ -359,6 +360,8 @@ Ví dụ `details` theo loại:
   "recipients": "BOTH"
 }
 ```
+
+`recipients`: `OWNER` (chủ thể nếu có `subject_user_id`, ngược lại là người tạo) · `PARTNER` (người còn lại) · `BOTH`. App hiển thị thành "mình / đối phương / cả hai" theo góc nhìn người xem.
 
 `offsets` dùng ISO-8601 duration (khoảng thời gian trước sự kiện). Backend giới hạn: tối đa 20 mốc ngày, tối đa 5 offset, offset ≤ 30 ngày.
 
@@ -541,11 +544,11 @@ interface MomentTypeHandler {
 | Nhóm | Endpoint |
 |---|---|
 | Auth | `POST /api/auth/register`, `/login`, `/refresh`, `/logout` |
-| Me | `GET/PATCH /api/me`, `PUT /api/me/settings`, `PUT/DELETE /api/me/location`, `POST/DELETE /api/me/devices` |
+| Me | `GET/PATCH /api/me`, `GET/PUT /api/me/settings`, `PUT/DELETE /api/me/location`, `POST/DELETE /api/me/devices` |
 | Couple | `POST /api/couples/invites`, `POST /api/couples/join`, `GET /api/couples/me`, `POST /api/couples/me/end`, `GET /api/couples/distance` |
-| Moment | `GET/POST /api/moments`, `GET/PATCH/DELETE /api/moments/{id}` (lọc theo `type`, khoảng ngày), `PUT /api/moments/{id}/reminder-config` |
-| Cycle | `GET/POST /api/cycles/logs`, `DELETE /api/cycles/logs/{id}`, `GET /api/cycles/prediction` |
-| Trait | `GET /api/traits/{userId}`, `POST/PATCH/DELETE /api/traits/sizes/{id}`, `POST/PATCH/DELETE /api/traits/preferences/{id}` (kèm links) |
+| Moment | `GET/POST /api/moments`, `GET/PATCH/DELETE /api/moments/{id}` (lọc theo `type`, khoảng ngày), `PUT /api/moments/{id}/reminder-config`, `GET /api/moments/{id}/reminders` (nhắc sắp tới của người xem) |
+| Cycle | `GET/POST /api/cycles/logs`, `DELETE /api/cycles/logs/{id}`, `GET /api/cycles/prediction?userId=`, `PUT /api/cycles/default-length` |
+| Trait | `GET /api/traits/catalog` (danh sách loại size/danh mục gợi ý), `GET /api/traits/{userId}`, `POST/PATCH/DELETE /api/traits/sizes/{id}`, `POST/PATCH/DELETE /api/traits/preferences/{id}` (kèm links) |
 | Media | `POST /api/media/upload-url`, `POST /api/media/{id}/confirm`, `DELETE /api/media/{id}` |
 | Place (GĐ2) | `GET/POST /api/places`, `PATCH/DELETE /api/places/{id}`, `POST /api/places/{id}/visits`, `PATCH/DELETE /api/visits/{id}` |
 | Love note (GĐ2) | `GET/POST /api/love-notes`, `POST /api/love-notes/{id}/seen`, `GET /api/love-notes/latest` |
@@ -573,6 +576,8 @@ Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) tr�
 - Dạng hiển thị "mindmap" cho địa điểm hẹn hò — chốt khi làm GĐ2.
 - Nguồn dữ liệu gợi ý địa điểm (Google Places / OSM / tự xây) — GĐ3.
 - Mã hoá dữ liệu chu kỳ ở mức cột — cân nhắc trước khi phát hành công khai.
+- MinIO đã ngừng phát hành Docker image/binary bản community (cuối 2025): dev dùng image cũ đã pin; khi lên production chọn AWS S3 hoặc S3-compatible khác (Cloudflare R2, SeaweedFS, Garage) — code không đổi vì dùng S3 API.
+- Spring Boot 3.5 hết hỗ trợ OSS từ 06/2026: nâng lên Spring Boot 4.x là một task riêng sau GĐ1.
 
 ## 12. Lịch sử thay đổi
 
@@ -582,3 +587,4 @@ Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) tr�
 | 2026-10-10 | Mã mời hết hạn sau 1 giờ (thay vì 24h). Thêm tuỳ chỉnh nhắc nhở theo từng kỷ niệm (`reminder_config`). |
 | 2026-10-10 | Người nhận nhắc chọn được cho mọi loại kỷ niệm (mình/đối phương/cả hai); ghi chú FK & index. |
 | 2026-10-10 | Mã mời chuyển sang lưu Redis (TTL 1 giờ), thêm rate limit nhập mã; bỏ bảng `invite_codes`. |
+| 2026-10-10 | Đồng bộ khi lập kế hoạch GĐ1: email unique theo lower(email); `cycle_length_default`; PK `moment_media` theo position; `recipients` OWNER/PARTNER/BOTH; địa điểm GĐ1 tạo kèm kỷ niệm; bổ sung endpoint settings/reminders/catalog/default-length. |
