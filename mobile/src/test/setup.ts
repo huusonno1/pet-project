@@ -1,3 +1,8 @@
+import { configure } from '@testing-library/react-native';
+
+// Màn hình có chuỗi request phụ thuộc nhau (me → couple → dữ liệu) — 1s mặc định dễ chập chờn
+configure({ asyncUtilTimeout: 5000 });
+
 jest.mock('expo-secure-store', () => {
   const store = new Map<string, string>();
   return {

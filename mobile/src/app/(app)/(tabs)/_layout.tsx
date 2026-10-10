@@ -16,6 +16,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="index" options={{ title: 'Trang chủ', tabBarIcon: tabIcon('heart') }} />
       <Tabs.Screen name="moments" options={{ title: 'Kỷ niệm', tabBarIcon: tabIcon('images') }} />
       <Tabs.Screen name="cycle" options={{ title: 'Chu kỳ', tabBarIcon: tabIcon('flower') }} />
+      <Tabs.Screen name="traits" options={{ title: 'Đặc điểm', tabBarIcon: tabIcon('gift') }} />
     </Tabs>
   );
 }
