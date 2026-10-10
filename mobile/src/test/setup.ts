@@ -39,6 +39,20 @@ jest.mock('@react-native-community/datetimepicker', () => {
   return { __esModule: true, default: Picker, DateTimePickerAndroid: { open: jest.fn(), dismiss: jest.fn() } };
 });
 
+jest.mock('expo-location', () => ({
+  requestForegroundPermissionsAsync: jest.fn(async () => ({
+    granted: true,
+    status: 'granted',
+    canAskAgain: true,
+    expires: 'never',
+  })),
+  getCurrentPositionAsync: jest.fn(async () => ({
+    coords: { latitude: 21.0285, longitude: 105.8542, accuracy: 20 },
+    timestamp: 0,
+  })),
+  Accuracy: { Balanced: 3 },
+}));
+
 beforeEach(() => {
   (require('expo-secure-store').__store as Map<string, string>).clear();
   jest.clearAllMocks();

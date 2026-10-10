@@ -31,7 +31,7 @@ export default function AppLayout() {
   return (
     <Stack screenOptions={{ headerTintColor: colors.primary }}>
       <Stack.Protected guard={paired}>
-        <Stack.Screen name="index" options={{ title: 'Couple App' }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack.Protected>
       <Stack.Protected guard={!paired}>
         <Stack.Screen name="pair" options={{ title: 'Ghép đôi' }} />
