@@ -1,8 +1,12 @@
 package com.coupleapp.support;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -62,6 +66,17 @@ public abstract class IntegrationTest {
 
     protected JsonNode read(ResultActions result) throws Exception {
         return json.readTree(result.andReturn().getResponse().getContentAsString());
+    }
+
+    protected String register(String email, String displayName) throws Exception {
+        return read(post("/api/auth/register", null,
+                Map.of("email", email, "password", "password123", "displayName", displayName))
+                .andExpect(status().isCreated()))
+                .get("accessToken").asText();
+    }
+
+    protected UUID userId(String token) throws Exception {
+        return UUID.fromString(read(get("/api/me", token).andExpect(status().isOk())).get("id").asText());
     }
 
     private MockHttpServletRequestBuilder auth(MockHttpServletRequestBuilder b, String token) {
