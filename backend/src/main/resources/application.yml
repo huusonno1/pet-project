@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: couple-app
+  datasource:
+    url: jdbc:postgresql://localhost:5432/coupleapp
+    username: coupleapp
+    password: coupleapp
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  threads:
+    virtual:
+      enabled: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:dev-only-secret-change-me-0123456789abcdef}
+    access-ttl: 15m
+    refresh-ttl: 30d
+  storage:
+    endpoint: http://localhost:9000          # backend gọi MinIO
+    public-endpoint: http://localhost:9000   # host trong URL presigned (điện thoại phải truy cập được)
+    region: us-east-1
+    access-key: minioadmin
+    secret-key: minioadmin
+    bucket: couple-media
+  push:
+    expo-url: https://exp.host/--/api/v2/push/send
+  scheduling:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health

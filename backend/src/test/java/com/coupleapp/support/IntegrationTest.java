@@ -1,0 +1,79 @@
+package com.coupleapp.support;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+@SpringBootTest(properties = "app.scheduling.enabled=false")
+@AutoConfigureMockMvc
+@Import(TestcontainersConfig.class)
+public abstract class IntegrationTest {
+
+    @Autowired protected MockMvc mvc;
+    @Autowired protected ObjectMapper json;
+    @Autowired protected JdbcTemplate jdbc;
+    @Autowired protected StringRedisTemplate redis;
+
+    @BeforeEach
+    void resetState() {
+        List<String> tables = jdbc.queryForList(
+                "select tablename from pg_tables where schemaname = 'public' and tablename <> 'flyway_schema_history'",
+                String.class);
+        if (!tables.isEmpty()) {
+            jdbc.execute("TRUNCATE " + String.join(", ", tables) + " CASCADE");
+        }
+        try (RedisConnection c = redis.getRequiredConnectionFactory().getConnection()) {
+            c.serverCommands().flushAll();
+        }
+    }
+
+    protected ResultActions get(String url, String token) throws Exception {
+        return mvc.perform(auth(MockMvcRequestBuilders.get(url), token));
+    }
+
+    protected ResultActions post(String url, String token, Object body) throws Exception {
+        return mvc.perform(withBody(MockMvcRequestBuilders.post(url), token, body));
+    }
+
+    protected ResultActions put(String url, String token, Object body) throws Exception {
+        return mvc.perform(withBody(MockMvcRequestBuilders.put(url), token, body));
+    }
+
+    protected ResultActions patch(String url, String token, Object body) throws Exception {
+        return mvc.perform(withBody(MockMvcRequestBuilders.patch(url), token, body));
+    }
+
+    protected ResultActions delete(String url, String token) throws Exception {
+        return mvc.perform(auth(MockMvcRequestBuilders.delete(url), token));
+    }
+
+    protected JsonNode read(ResultActions result) throws Exception {
+        return json.readTree(result.andReturn().getResponse().getContentAsString());
+    }
+
+    private MockHttpServletRequestBuilder auth(MockHttpServletRequestBuilder b, String token) {
+        return token == null ? b : b.header("Authorization", "Bearer " + token);
+    }
+
+    private MockHttpServletRequestBuilder withBody(MockHttpServletRequestBuilder b, String token, Object body)
+            throws Exception {
+        b = auth(b, token).contentType(MediaType.APPLICATION_JSON);
+        if (body == null) {
+            return b;
+        }
+        return b.content(body instanceof String s ? s : json.writeValueAsString(body));
+    }
+}

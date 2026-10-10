@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: coupleapp
+      POSTGRES_USER: coupleapp
+      POSTGRES_PASSWORD: coupleapp
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+
+  minio:
+    # minio/minio đã bị gỡ khỏi Docker Hub; dùng bản Bitnami legacy cho dev (xem spec §11)
+    image: bitnamilegacy/minio:2025.4.22
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports: ["9000:9000", "9001:9001"]
+    volumes: [miniodata:/bitnami/minio/data]
+
+volumes:
+  pgdata:
+  miniodata:

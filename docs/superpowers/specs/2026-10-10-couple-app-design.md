@@ -576,7 +576,7 @@ Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) tr�
 - Dạng hiển thị "mindmap" cho địa điểm hẹn hò — chốt khi làm GĐ2.
 - Nguồn dữ liệu gợi ý địa điểm (Google Places / OSM / tự xây) — GĐ3.
 - Mã hoá dữ liệu chu kỳ ở mức cột — cân nhắc trước khi phát hành công khai.
-- MinIO đã ngừng phát hành Docker image/binary bản community (cuối 2025): dev dùng image cũ đã pin; khi lên production chọn AWS S3 hoặc S3-compatible khác (Cloudflare R2, SeaweedFS, Garage) — code không đổi vì dùng S3 API.
+- MinIO đã ngừng phát hành Docker image/binary bản community (cuối 2025): image `minio/minio` đã bị gỡ khỏi Docker Hub, dev/test dùng `bitnamilegacy/minio` (không còn cập nhật); khi lên production chọn AWS S3 hoặc S3-compatible khác (Cloudflare R2, SeaweedFS, Garage) — code không đổi vì dùng S3 API.
 - Spring Boot 3.5 hết hỗ trợ OSS từ 06/2026: nâng lên Spring Boot 4.x là một task riêng sau GĐ1.
 
 ## 12. Lịch sử thay đổi
