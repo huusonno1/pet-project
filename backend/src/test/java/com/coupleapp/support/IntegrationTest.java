@@ -1,9 +1,14 @@
 package com.coupleapp.support;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,6 +98,29 @@ public abstract class IntegrationTest {
             body.put("startedDatingOn", startedDatingOn);
         }
         post("/api/couples/join", joinerToken, body).andExpect(status().isCreated());
+    }
+
+    protected static final byte[] TINY_JPEG = {
+            (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0x00, 0x10, 'J', 'F', 'I', 'F', 0x00, (byte) 0xFF, (byte) 0xD9};
+
+    protected int putToPresignedUrl(String url, String contentType, byte[] bytes) throws Exception {
+        HttpResponse<Void> res = HttpClient.newHttpClient().send(
+                HttpRequest.newBuilder(URI.create(url))
+                        .header("Content-Type", contentType)
+                        .PUT(HttpRequest.BodyPublishers.ofByteArray(bytes))
+                        .build(),
+                HttpResponse.BodyHandlers.discarding());
+        return res.statusCode();
+    }
+
+    protected UUID uploadImage(String token) throws Exception {
+        JsonNode up = read(post("/api/media/upload-url", token,
+                Map.of("contentType", "image/jpeg", "sizeBytes", TINY_JPEG.length))
+                .andExpect(status().isCreated()));
+        assertThat(putToPresignedUrl(up.get("uploadUrl").asText(), "image/jpeg", TINY_JPEG)).isEqualTo(200);
+        UUID id = UUID.fromString(up.get("mediaId").asText());
+        post("/api/media/" + id + "/confirm", token, null).andExpect(status().isOk());
+        return id;
     }
 
     private MockHttpServletRequestBuilder auth(MockHttpServletRequestBuilder b, String token) {

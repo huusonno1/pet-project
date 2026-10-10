@@ -2,6 +2,7 @@ package com.coupleapp.user;
 
 import com.coupleapp.common.ApiException;
 import com.coupleapp.common.ErrorCode;
+import com.coupleapp.media.MediaService;
 import com.coupleapp.user.UserDtos.MeResponse;
 import com.coupleapp.user.UserDtos.SettingsResponse;
 import com.coupleapp.user.UserDtos.UpdateMeRequest;
@@ -25,6 +26,7 @@ public class MeService {
 
     private final UserRepository users;
     private final UserSettingsRepository settings;
+    private final MediaService media;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
@@ -49,6 +51,10 @@ public class MeService {
                 throw new ApiException(ErrorCode.VALIDATION_FAILED, "Múi giờ không hợp lệ");
             }
             u.setTimezone(r.timezone());
+        }
+        if (r.avatarMediaId() != null) {
+            media.requireAvatar(userId, r.avatarMediaId());
+            u.setAvatarMediaId(r.avatarMediaId());
         }
         u.setUpdatedAt(clock.instant());
         return toResponse(u);
@@ -90,7 +96,8 @@ public class MeService {
     }
 
     MeResponse toResponse(User u) {
-        return new MeResponse(u.getId(), u.getEmail(), u.getDisplayName(), u.getBirthday(), u.getTimezone(), null);
+        String avatarUrl = u.getAvatarMediaId() == null ? null : media.avatarUrl(u.getAvatarMediaId()).orElse(null);
+        return new MeResponse(u.getId(), u.getEmail(), u.getDisplayName(), u.getBirthday(), u.getTimezone(), avatarUrl);
     }
 
     private static SettingsResponse toResponse(UserSettings s) {

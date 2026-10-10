@@ -16,7 +16,8 @@ public final class UserDtos {
     public record UpdateMeRequest(
             @Size(min = 1, max = 50) String displayName,
             @Past LocalDate birthday,
-            @Size(max = 64) String timezone) {}
+            @Size(max = 64) String timezone,
+            UUID avatarMediaId) {}
 
     public record SettingsResponse(
             boolean shareLocation, boolean shareCycle, int cycleLengthDefault, Map<String, Boolean> notifyPrefs) {}
