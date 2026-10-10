@@ -29,3 +29,19 @@ Khi test trên điện thoại thật, đặt `APP_STORAGE_PUBLIC_ENDPOINT=http:
 ```bash
 cd backend && ./mvnw test            # cần Docker (Testcontainers)
 ```
+
+## API GĐ1 (tóm tắt)
+
+Mọi endpoint (trừ `/api/auth/**`) cần header `Authorization: Bearer <accessToken>`. Lỗi trả dạng RFC 7807 kèm `code`.
+
+| Nhóm | Endpoint |
+|---|---|
+| Auth | `POST /api/auth/register`, `/login`, `/refresh`, `/logout` |
+| Me | `GET/PATCH /api/me`, `GET/PUT /api/me/settings`, `PUT/DELETE /api/me/location`, `POST/DELETE /api/me/devices` |
+| Couple | `POST /api/couples/invites`, `POST /api/couples/join`, `GET /api/couples/me`, `POST /api/couples/me/end`, `GET /api/couples/distance` |
+| Media | `POST /api/media/upload-url` → PUT file lên `uploadUrl` → `POST /api/media/{id}/confirm`; `DELETE /api/media/{id}` |
+| Moment | `GET/POST /api/moments`, `GET/PATCH/DELETE /api/moments/{id}`, `PUT /api/moments/{id}/reminder-config`, `GET /api/moments/{id}/reminders` |
+| Cycle | `GET/POST /api/cycles/logs`, `DELETE /api/cycles/logs/{id}`, `GET /api/cycles/prediction?userId=`, `PUT /api/cycles/default-length` |
+| Trait | `GET /api/traits/catalog`, `GET /api/traits/{userId}`, `POST/PATCH/DELETE /api/traits/sizes[/{id}]`, `POST/PATCH/DELETE /api/traits/preferences[/{id}]` |
+
+Chi tiết nghiệp vụ: `docs/superpowers/specs/2026-10-10-couple-app-design.md`.
