@@ -35,9 +35,10 @@ Lưu ý: schema DB (§6) được thiết kế cho cả GĐ1 và GĐ2 ngay từ 
 | Vị trí | `expo-location` (chỉ foreground ở GĐ1) |
 | Backend | **Java 21, Spring Boot 3**, Spring Security (JWT), Spring Data JPA, Flyway |
 | Database | **PostgreSQL** |
+| Cache / dữ liệu ngắn hạn | **Redis** — mã mời ghép đôi (TTL), rate limit; sau này dùng thêm cho cache |
 | Lưu ảnh | **MinIO** (S3-compatible) qua AWS SDK v2 với endpoint cấu hình được → chuyển sang AWS S3 chỉ bằng đổi config |
 | Push notification | **Expo Push Service** → FCM (Android) / APNs (iOS) |
-| Triển khai | Docker / docker-compose (backend + Postgres + MinIO), VPS hoặc Railway |
+| Triển khai | Docker / docker-compose (backend + Postgres + Redis + MinIO), VPS hoặc Railway |
 | Test | JUnit 5, Testcontainers (Postgres, MinIO), Jest + React Native Testing Library |
 
 ### 3.1 Chi phí push notification
@@ -186,7 +187,7 @@ pet-project/
 ├── mobile/      # Expo app (TypeScript)
 ├── backend/     # Spring Boot (Java 21)
 ├── docs/        # spec, plan
-└── docker-compose.yml   # Postgres + MinIO (+ backend) cho dev
+└── docker-compose.yml   # Postgres + Redis + MinIO (+ backend) cho dev
 ```
 
 ### 5.2 Backend: chia module theo tính năng
@@ -245,14 +246,7 @@ couple_members (
 -- Mỗi user chỉ có tối đa 1 cặp đôi đang hoạt động:
 CREATE UNIQUE INDEX ux_member_active ON couple_members(user_id) WHERE left_at IS NULL;
 
-invite_codes (
-  code        text PK,
-  inviter_id  uuid FK users,
-  expires_at  timestamptz NOT NULL,
-  used_by     uuid NULL FK users,
-  used_at     timestamptz NULL,
-  created_at
-)
+-- Mã mời KHÔNG lưu trong Postgres mà lưu trong Redis (xem §6.8).
 
 user_settings (
   user_id uuid PK FK users,
@@ -472,16 +466,28 @@ love_notes (
 )
 ```
 
+### 6.8 Redis
+
+| Key | Giá trị | TTL | Mục đích |
+|---|---|---|---|
+| `invite:{code}` | JSON `{"inviterId": "...", "expiresAt": "..."}` | 3600s | Mã mời ghép đôi |
+| `invite:user:{userId}` | `code` | 3600s | Mã đang hiệu lực của người mời → huỷ mã cũ khi tạo mã mới |
+| `ratelimit:join:{userId}` | số lần nhập mã | 900s | Tối đa 10 lần nhập mã / 15 phút (chống dò mã) |
+
+Redis chỉ chứa dữ liệu ngắn hạn, mất dữ liệu Redis không ảnh hưởng dữ liệu chính (tệ nhất người dùng phải tạo mã mới).
+
 ## 7. Luồng xử lý chính
 
 ### 7.1 Ghép đôi
 
-1. A: `POST /api/couples/invites` → kiểm tra A chưa có cặp ACTIVE → sinh mã, lưu `invite_codes`.
-2. B: `POST /api/couples/join {code, startedDatingOn?}` → trong **một transaction**:
-   - Khoá dòng mã (`SELECT … FOR UPDATE`); kiểm tra chưa dùng, chưa hết hạn, `inviter_id ≠ B`.
-   - Kiểm tra cả A và B chưa có cặp ACTIVE.
-   - Tạo `couples` + 2 `couple_members`, đánh dấu mã đã dùng, tạo moment `ANNIVERSARY` nếu có ngày.
-   - Unique index `ux_member_active` là chốt chặn cuối khi có request song song.
+1. A: `POST /api/couples/invites` → kiểm tra A chưa có cặp ACTIVE → nếu có `invite:user:{A}` thì `DEL` mã cũ → sinh mã mới (thử lại nếu trùng, dùng `SET NX`) → `SET invite:{code} … EX 3600` và `SET invite:user:{A} {code} EX 3600`. Trả về mã + thời điểm hết hạn.
+2. B: `POST /api/couples/join {code, startedDatingOn?}`:
+   1. Kiểm tra rate limit `ratelimit:join:{B}` (`INCR`, đặt `EXPIRE 900` ở lần đầu) → vượt 10 lần → `429 TOO_MANY_ATTEMPTS`.
+   2. `GET invite:{code}` → không có → `INVITE_INVALID` (hết hạn và không tồn tại được coi như nhau); `inviterId = B` → `INVITE_SELF`.
+   3. Kiểm tra cả A và B chưa có cặp ACTIVE → nếu có → `COUPLE_ALREADY_PAIRED`.
+   4. **Giành mã:** `GETDEL invite:{code}` (nguyên tử) → trả `null` nghĩa là người khác vừa dùng → `INVITE_INVALID`. Xoá luôn `invite:user:{A}`.
+   5. Transaction Postgres: tạo `couples` + 2 `couple_members`, tạo moment `ANNIVERSARY` nếu có ngày. Unique index `ux_member_active` là chốt chặn cuối khi có request song song.
+   6. Nếu transaction lỗi sau khi đã giành mã → khôi phục `invite:{code}` với TTL còn lại (tính từ `expiresAt`) để A không phải tạo mã mới.
 3. Push cho A: "[B] đã ghép đôi với bạn 💞".
 
 ### 7.2 Upload ảnh
@@ -549,16 +555,16 @@ Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) tr�
 ## 9. Xử lý lỗi
 
 - Mọi lỗi trả **RFC 7807 `ProblemDetail`** kèm trường `code`. App map `code` → thông báo tiếng Việt.
-- Mã lỗi chính: `VALIDATION_FAILED`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `COUPLE_REQUIRED`, `COUPLE_ALREADY_PAIRED`, `INVITE_INVALID`, `INVITE_EXPIRED`, `INVITE_SELF`, `MEDIA_NOT_UPLOADED`, `LOCATION_NOT_SHARED`.
+- Mã lỗi chính: `TOO_MANY_ATTEMPTS`, `VALIDATION_FAILED`, `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `COUPLE_REQUIRED`, `COUPLE_ALREADY_PAIRED`, `INVITE_INVALID`, `INVITE_SELF`, `MEDIA_NOT_UPLOADED`, `LOCATION_NOT_SHARED`.
 - Truy cập dữ liệu của cặp đôi khác → trả `404` (không tiết lộ sự tồn tại).
 - Push: Expo trả `DeviceNotRegistered` → xoá token; lỗi tạm thời → retry (§7.3).
-- Job dọn dẹp hằng ngày: xoá `media` PENDING quá 24h (cả object trên MinIO), xoá `invite_codes` hết hạn quá 7 ngày.
+- Job dọn dẹp hằng ngày: xoá `media` PENDING quá 24h (cả object trên MinIO). (Mã mời tự hết hạn nhờ TTL Redis, không cần dọn.)
 - Mobile: lỗi mạng → TanStack Query retry + hiển thị trạng thái offline; upload ảnh lỗi → cho phép thử lại từng ảnh.
 
 ## 10. Kiểm thử
 
 - **Backend unit test:** từng `MomentTypeHandler` (tính mốc 100/1000 ngày, năm nhuận, sinh nhật 29/2, chọn đúng người nhận theo vai trò, `share_cycle=false`, gộp `reminder_config` tuỳ chỉnh với mặc định, giới hạn số mốc/offset), thuật toán dự đoán chu kỳ, haversine, sinh mã mời.
-- **Backend integration test (Testcontainers Postgres + MinIO):** ghép đôi (gồm 2 request song song), cô lập dữ liệu giữa hai cặp đôi, quyền `AUTHOR_ONLY`, luồng upload presigned, scheduler (`SKIP LOCKED`, retry). Expo Push được mock.
+- **Backend integration test (Testcontainers Postgres + Redis + MinIO):** ghép đôi (gồm 2 request song song cùng một mã, mã hết hạn, rate limit, khôi phục mã khi transaction lỗi), cô lập dữ liệu giữa hai cặp đôi, quyền `AUTHOR_ONLY`, luồng upload presigned, scheduler (`SKIP LOCKED`, retry). Expo Push được mock.
 - **Mobile:** Jest + React Native Testing Library cho form và logic hiển thị chính; test thủ công trên Android thật + iPhone thật qua development build/TestFlight.
 
 ## 11. Vấn đề mở (quyết định sau)
@@ -575,3 +581,4 @@ Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) tr�
 | 2026-10-10 | Bản đầu tiên. |
 | 2026-10-10 | Mã mời hết hạn sau 1 giờ (thay vì 24h). Thêm tuỳ chỉnh nhắc nhở theo từng kỷ niệm (`reminder_config`). |
 | 2026-10-10 | Người nhận nhắc chọn được cho mọi loại kỷ niệm (mình/đối phương/cả hai); ghi chú FK & index. |
+| 2026-10-10 | Mã mời chuyển sang lưu Redis (TTL 1 giờ), thêm rate limit nhập mã; bỏ bảng `invite_codes`. |
