@@ -237,6 +237,22 @@ class MomentTest extends IntegrationTest {
     }
 
     @Test
+    void deletingAttachedPhotoKeepsMomentReadable() throws Exception {
+        UUID first = uploadImage(lan);
+        UUID second = uploadImage(lan);
+        String id = create(lan, Map.of("type", "ANNIVERSARY", "title", "Đà Lạt",
+                "occursOn", today().minusDays(10).toString(), "mediaIds", List.of(first, second)));
+
+        delete("/api/media/" + first, lan).andExpect(status().isNoContent());
+
+        get("/api/moments/" + id, lan)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.media.length()").value(1))
+                .andExpect(jsonPath("$.media[0].id").value(second.toString()));
+        patch("/api/moments/" + id, lan, Map.of("title", "Đà Lạt 2026")).andExpect(status().isOk());
+    }
+
+    @Test
     void requiresCouple() throws Exception {
         String hoa = register("hoa@x.vn", "Hoa");
         get("/api/moments", hoa).andExpect(jsonPath("$.code").value("COUPLE_REQUIRED"));
