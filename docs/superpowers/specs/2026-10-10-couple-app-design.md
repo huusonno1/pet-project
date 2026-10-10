@@ -81,7 +81,7 @@ Người dùng tạo các kỷ niệm chung của cặp đôi. Mỗi kỷ niệm
 
 #### Các loại kỷ niệm
 
-| Loại | Mô tả | Người nhận nhắc & thời điểm |
+| Loại | Mô tả | Người nhận nhắc **mặc định** & thời điểm |
 |---|---|---|
 | `ANNIVERSARY` | Ngày yêu nhau, kỷ niệm quan trọng | **Cả hai.** Mốc 100, 200, 300, 365, 500, 1000, 1500, 2000… ngày (sau 1000 thì mỗi 500 ngày) và mỗi năm tròn. Nhắc trước 3 ngày và đúng ngày lúc 08:00. |
 | `DATE_PLAN` | Lịch hẹn sắp tới | **Cả hai.** Trước 1 ngày (20:00) và trước 2 giờ. |
@@ -89,6 +89,7 @@ Người dùng tạo các kỷ niệm chung của cặp đôi. Mỗi kỷ niệm
 | `CYCLE` | Chu kỳ kinh nguyệt | **Chủ thể:** "Chu kỳ dự kiến bắt đầu khoảng ngày X" (trước 2 ngày). **Đối phương:** "Khoảng 2 ngày nữa là tới ngày của [tên], nhớ quan tâm nhé 💗" (trước 2 ngày) và nhắc nhẹ vào ngày dự kiến. |
 | `CUSTOM` | Kỷ niệm tự do | Người tạo tự chọn: ai nhận (mình / đối phương / cả hai), trước bao nhiêu ngày, có lặp hằng năm không. |
 
+- Người nhận trong bảng chỉ là **mặc định**: với **mọi loại kỷ niệm**, người dùng đều chọn được nhắc cho **mình / đối phương / cả hai** (xem Tuỳ chỉnh nhắc nhở).
 - Nhắc nhở dựa trên **vai trò (chủ thể / đối phương)**, không dựa trên giới tính.
 
 #### Tuỳ chỉnh nhắc nhở
@@ -98,7 +99,7 @@ Các mốc và thời điểm ở bảng trên là **mặc định**. Mỗi kỷ
 - **Mốc ngày** (`ANNIVERSARY`): thêm/bớt mốc (VD thêm 520, 999 ngày), bật/tắt nhắc mỗi năm tròn.
 - **Nhắc trước bao lâu:** chọn nhiều mốc (VD trước 7 ngày, 3 ngày, 1 ngày, đúng ngày; với `DATE_PLAN` có thể theo giờ: trước 2 giờ, 30 phút).
 - **Giờ gửi** cho các nhắc theo ngày (mặc định 08:00, 20:00 với `DATE_PLAN` trước 1 ngày).
-- **Người nhận:** mình / đối phương / cả hai (với `CYCLE` và `GIFT_OCCASION`, chỉ người tạo hoặc chủ thể được đổi người nhận).
+- **Người nhận:** mình / đối phương / cả hai — áp dụng cho **tất cả các loại**. Riêng `CYCLE` là dữ liệu nhạy cảm nên chỉ **chủ thể** được sửa tuỳ chỉnh nhắc nhở của kỷ niệm đó.
 - **Khôi phục mặc định.**
 
 Tuỳ chỉnh áp dụng **cho kỷ niệm đó** và cho cả hai người trong cặp đôi. Mặc định toàn app (theo loại) chỉnh được trong Cài đặt ở giai đoạn sau.
@@ -205,6 +206,8 @@ Module chỉ giao tiếp với nhau qua service interface, không truy cập rep
 
 PostgreSQL, migration bằng Flyway. Khoá chính `uuid` (sinh ở backend). Mọi bảng có `created_at`; bảng sửa được có `updated_at`.
 
+**Khoá ngoại & index:** mọi cột `*_id`/`created_by` đều có FK (đảm bảo toàn vẹn dữ liệu; FK không làm chậm truy vấn đọc). PostgreSQL **không tự tạo index cho cột FK**, nên tạo index cho các cột FK dùng để lọc/join thường xuyên (`couple_id`, `subject_user_id`, `moment_id`, `place_id`, `user_id`…). Cột chỉ dùng để hiển thị như `created_by` thì không cần index riêng (join sang `users` theo khoá chính đã nhanh).
+
 ### 6.1 Tài khoản & cặp đôi
 
 ```sql
@@ -301,7 +304,7 @@ moments (
   occurs_on        date NOT NULL,
   occurs_at        timestamptz NULL,          -- có giờ cụ thể (DATE_PLAN)
   recurrence       text NOT NULL DEFAULT 'NONE' CHECK (recurrence IN ('NONE','YEARLY')),
-  subject_user_id  uuid NULL FK users,        -- người được nhắc tới (sinh nhật ai, chu kỳ ai)
+  subject_user_id  uuid NULL FK users,        -- kỷ niệm "của" ai: sinh nhật ai, chu kỳ ai; NULL = kỷ niệm chung (ngày yêu, lịch hẹn)
   place_id         uuid NULL FK places,
   message          text NULL,                 -- lời nhắn tại thời điểm kỷ niệm
   details          jsonb NOT NULL DEFAULT '{}', -- dữ liệu riêng theo type, handler validate
@@ -570,4 +573,5 @@ Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) tr�
 | Ngày | Thay đổi |
 |---|---|
 | 2026-10-10 | Bản đầu tiên. |
+| 2026-10-10 | Người nhận nhắc chọn được cho mọi loại kỷ niệm (mình/đối phương/cả hai); ghi chú FK & index. |
 | 2026-10-10 | Mã mời hết hạn sau 1 giờ (thay vì 24h). Thêm tuỳ chỉnh nhắc nhở theo từng kỷ niệm (`reminder_config`). |
