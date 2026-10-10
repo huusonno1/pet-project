@@ -573,5 +573,5 @@ Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) tr�
 | Ngày | Thay đổi |
 |---|---|
 | 2026-10-10 | Bản đầu tiên. |
-| 2026-10-10 | Người nhận nhắc chọn được cho mọi loại kỷ niệm (mình/đối phương/cả hai); ghi chú FK & index. |
 | 2026-10-10 | Mã mời hết hạn sau 1 giờ (thay vì 24h). Thêm tuỳ chỉnh nhắc nhở theo từng kỷ niệm (`reminder_config`). |
+| 2026-10-10 | Người nhận nhắc chọn được cho mọi loại kỷ niệm (mình/đối phương/cả hai); ghi chú FK & index. |
