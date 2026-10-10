@@ -35,6 +35,7 @@ export default function AppLayout() {
         <Stack.Screen name="moments/new" options={{ title: 'Kỷ niệm mới' }} />
         <Stack.Screen name="moments/[id]/index" options={{ title: 'Kỷ niệm' }} />
         <Stack.Screen name="moments/[id]/edit" options={{ title: 'Sửa kỷ niệm' }} />
+        <Stack.Screen name="moments/[id]/reminders" options={{ title: 'Nhắc nhở' }} />
       </Stack.Protected>
       <Stack.Protected guard={!paired}>
         <Stack.Screen name="pair" options={{ title: 'Ghép đôi' }} />
