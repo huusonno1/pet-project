@@ -1,14 +1,15 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "Couple App",
+    "slug": "couple-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
-    "userInterfaceStyle": "automatic",
+    "scheme": "coupleapp",
+    "userInterfaceStyle": "light",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.coupleapp.mobile"
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +18,8 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.coupleapp.mobile"
     },
     "web": {
       "output": "static",
@@ -28,14 +30,40 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#E8577E",
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 76
+        }
+      ],
+      "expo-secure-store",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Cho phép Couple App dùng camera để chụp ảnh kỷ niệm",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cho phép Couple App chọn ảnh từ thư viện để lưu kỷ niệm"
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Couple App dùng vị trí để tính khoảng cách giữa hai bạn"
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#E8577E"
         }
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
+      "typedRoutes": false,
       "reactCompiler": true
     }
   }
