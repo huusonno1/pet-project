@@ -14,6 +14,7 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{ tabBarActiveTintColor: colors.primary, headerTintColor: colors.text }}>
       <Tabs.Screen name="index" options={{ title: 'Trang chủ', tabBarIcon: tabIcon('heart') }} />
+      <Tabs.Screen name="moments" options={{ title: 'Kỷ niệm', tabBarIcon: tabIcon('images') }} />
     </Tabs>
   );
 }
