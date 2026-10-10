@@ -71,6 +71,17 @@ jest.mock('expo-file-system', () => ({
 jest.mock('expo-image-manipulator', () => ({ SaveFormat: { JPEG: 'jpeg' }, ImageManipulator: { manipulate: jest.fn() } }));
 jest.mock('expo/fetch', () => ({ fetch: jest.fn(async () => ({ ok: true, status: 200 })) }));
 
+jest.mock('expo-notifications', () => ({
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn(),
+  getPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  requestPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  getExpoPushTokenAsync: jest.fn(async () => ({ data: 'ExponentPushToken[test]' })),
+  useLastNotificationResponse: jest.fn(() => null),
+  AndroidImportance: { MAX: 5 },
+}));
+jest.mock('expo-device', () => ({ __esModule: true, isDevice: true }));
+
 beforeEach(() => {
   (require('expo-secure-store').__store as Map<string, string>).clear();
   jest.clearAllMocks();

@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { useCouple } from '@/features/couple/api';
 import { errorMessage } from '@/lib/api/client';
+import { useNotificationRouting, usePushRegistration } from '@/lib/use-push';
 import { Button } from '@/ui/Button';
 import { ErrorText } from '@/ui/ErrorText';
 import { Screen } from '@/ui/Screen';
@@ -10,6 +11,8 @@ import { colors } from '@/ui/theme';
 
 export default function AppLayout() {
   const couple = useCouple();
+  usePushRegistration();
+  useNotificationRouting();
 
   if (couple.isPending) {
     return (
