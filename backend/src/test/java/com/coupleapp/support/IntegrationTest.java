@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -77,6 +78,21 @@ public abstract class IntegrationTest {
 
     protected UUID userId(String token) throws Exception {
         return UUID.fromString(read(get("/api/me", token).andExpect(status().isOk())).get("id").asText());
+    }
+
+    protected void pair(String inviterToken, String joinerToken) throws Exception {
+        pair(inviterToken, joinerToken, null);
+    }
+
+    protected void pair(String inviterToken, String joinerToken, String startedDatingOn) throws Exception {
+        String code = read(post("/api/couples/invites", inviterToken, null).andExpect(status().isCreated()))
+                .get("code").asText();
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", code);
+        if (startedDatingOn != null) {
+            body.put("startedDatingOn", startedDatingOn);
+        }
+        post("/api/couples/join", joinerToken, body).andExpect(status().isCreated());
     }
 
     private MockHttpServletRequestBuilder auth(MockHttpServletRequestBuilder b, String token) {
