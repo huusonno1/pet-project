@@ -30,6 +30,31 @@ Khi test trên điện thoại thật, đặt `APP_STORAGE_PUBLIC_ENDPOINT=http:
 cd backend && ./mvnw test            # cần Docker (Testcontainers)
 ```
 
+## Mobile (Expo)
+
+```bash
+cd mobile
+cp .env.example .env        # sửa EXPO_PUBLIC_API_URL thành http://<IP-LAN-máy-dev>:8080
+npm install
+npx expo start              # quét QR bằng Expo Go
+npm test                    # unit/screen tests
+```
+
+Chạy backend cho điện thoại thật: `APP_STORAGE_PUBLIC_ENDPOINT=http://<IP-LAN>:9000 ./mvnw spring-boot:run`
+(để URL ảnh presigned trỏ về IP mà điện thoại truy cập được).
+
+**Expo Go** chạy được mọi thứ trừ **push notification trên Android**. Để nhận push cần development build:
+
+```bash
+npx eas-cli@latest login
+npx eas-cli@latest init                      # ghi extra.eas.projectId vào app.json
+npx eas-cli@latest credentials               # Android: thêm FCM V1 service account (Firebase)
+npx eas-cli@latest build --profile development --platform android
+npx eas-cli@latest device:create             # iOS: đăng ký iPhone (cần Apple Developer 99$/năm)
+npx eas-cli@latest build --profile development --platform ios
+npx expo start --dev-client
+```
+
 ## API GĐ1 (tóm tắt)
 
 Mọi endpoint (trừ `/api/auth/**`) cần header `Authorization: Bearer <accessToken>`. Lỗi trả dạng RFC 7807 kèm `code`.
