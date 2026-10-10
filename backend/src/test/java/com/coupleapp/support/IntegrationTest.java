@@ -3,6 +3,7 @@ package com.coupleapp.support;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.coupleapp.notification.PushSender;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
@@ -22,6 +23,7 @@ import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
@@ -36,6 +38,9 @@ public abstract class IntegrationTest {
     @Autowired protected ObjectMapper json;
     @Autowired protected JdbcTemplate jdbc;
     @Autowired protected StringRedisTemplate redis;
+
+    /** Không bao giờ gọi Expo thật trong test. */
+    @MockitoBean protected PushSender push;
 
     @BeforeEach
     void resetState() {
