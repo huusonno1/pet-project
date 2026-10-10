@@ -1,9 +1,20 @@
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
+import type * as NotificationsModule from 'expo-notifications';
 import { Platform } from 'react-native';
 
-Notifications.setNotificationHandler({
+import { isPushSupported } from './push-support';
+
+export const pushSupported = isPushSupported(Platform.OS, Constants.executionEnvironment);
+
+/** Chỉ nạp expo-notifications khi môi trường hỗ trợ (require động để Expo Go Android không crash lúc import). */
+export function loadNotifications(): typeof NotificationsModule | null {
+  return pushSupported ? (require('expo-notifications') as typeof NotificationsModule) : null;
+}
+
+const Notifications = loadNotifications();
+
+Notifications?.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: true,
     shouldSetBadge: false,
@@ -23,7 +34,7 @@ export function getLastPushToken(): string | null {
  * chưa có EAS projectId (chưa chạy `eas init`) hoặc chạy Expo Go trên Android.
  */
 export async function registerForPushAsync(): Promise<string | null> {
-  if (!Device.isDevice) return null;
+  if (!Notifications || !Device.isDevice) return null;
   try {
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {

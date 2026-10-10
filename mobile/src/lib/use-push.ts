@@ -1,11 +1,11 @@
-import * as Notifications from 'expo-notifications';
+import type { NotificationResponse } from 'expo-notifications';
 import { router } from 'expo-router';
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
 
 import { apiFetch } from '@/lib/api/client';
 
-import { registerForPushAsync, routeForDeepLink } from './push';
+import { loadNotifications, registerForPushAsync, routeForDeepLink } from './push';
 
 /** Đăng ký thiết bị nhận push với backend một lần sau khi vào khu vực đã đăng nhập. */
 export function usePushRegistration() {
@@ -26,9 +26,21 @@ export function usePushRegistration() {
 
 /** Bấm vào thông báo → mở đúng màn hình theo deep link backend gửi kèm (`data.url`). */
 export function useNotificationRouting() {
-  const response = Notifications.useLastNotificationResponse();
   useEffect(() => {
-    const route = routeForDeepLink(response?.notification.request.content.data?.url);
-    if (route) router.push(route);
-  }, [response]);
+    const Notifications = loadNotifications();
+    if (!Notifications) return;
+    let handled: string | null = null;
+    const open = (response: NotificationResponse) => {
+      const id = response.notification.request.identifier;
+      if (id === handled) return;
+      handled = id;
+      const route = routeForDeepLink(response.notification.request.content.data?.url);
+      if (route) router.push(route);
+    };
+    Notifications.getLastNotificationResponseAsync().then((response) => {
+      if (response) open(response);
+    });
+    const subscription = Notifications.addNotificationResponseReceivedListener(open);
+    return () => subscription.remove();
+  }, []);
 }
