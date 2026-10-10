@@ -53,6 +53,19 @@ jest.mock('expo-location', () => ({
   Accuracy: { Balanced: 3 },
 }));
 
+jest.mock('@/features/media/CameraSheet', () => ({ CameraSheet: () => null }));
+jest.mock('@/features/media/apply-filter', () => ({ applyFilter: jest.fn(async (uri: string) => uri) }));
+jest.mock('expo-image-picker', () => ({
+  launchImageLibraryAsync: jest.fn(async () => ({ canceled: true, assets: null })),
+}));
+// Màn hình import gián tiếp upload.ts — mock module native để import không lỗi (upload-test tự mock lại chi tiết)
+jest.mock('expo-file-system', () => ({
+  File: jest.fn().mockImplementation((uri: string) => ({ uri, size: 1 })),
+  Paths: { cache: 'file:///cache' },
+}));
+jest.mock('expo-image-manipulator', () => ({ SaveFormat: { JPEG: 'jpeg' }, ImageManipulator: { manipulate: jest.fn() } }));
+jest.mock('expo/fetch', () => ({ fetch: jest.fn(async () => ({ ok: true, status: 200 })) }));
+
 beforeEach(() => {
   (require('expo-secure-store').__store as Map<string, string>).clear();
   jest.clearAllMocks();
