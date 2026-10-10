@@ -53,7 +53,7 @@ Lưu ý: schema DB (§6) được thiết kế cho cả GĐ1 và GĐ2 ngay từ 
 
 - Đăng ký / đăng nhập bằng email + mật khẩu. JWT: access token 15 phút, refresh token 30 ngày (lưu hash trong DB, xoay vòng khi refresh).
 - **Ghép đôi bằng mã mời:**
-  - Người A tạo mã mời 8 ký tự (chữ in hoa + số, bỏ ký tự dễ nhầm như `0/O`, `1/I`), hết hạn sau 24h, dùng một lần.
+  - Người A tạo mã mời 8 ký tự (chữ in hoa + số, bỏ ký tự dễ nhầm như `0/O`, `1/I`), hết hạn sau **1 giờ**, dùng một lần. Mã hết hạn thì tạo mã mới (mã cũ của người đó bị vô hiệu).
   - Người B nhập mã → hai người trở thành cặp đôi.
   - Người **đã có cặp đôi ACTIVE** không được tạo mã và không được nhập mã.
   - Không thể nhập mã do chính mình tạo.
@@ -90,6 +90,18 @@ Người dùng tạo các kỷ niệm chung của cặp đôi. Mỗi kỷ niệm
 | `CUSTOM` | Kỷ niệm tự do | Người tạo tự chọn: ai nhận (mình / đối phương / cả hai), trước bao nhiêu ngày, có lặp hằng năm không. |
 
 - Nhắc nhở dựa trên **vai trò (chủ thể / đối phương)**, không dựa trên giới tính.
+
+#### Tuỳ chỉnh nhắc nhở
+
+Các mốc và thời điểm ở bảng trên là **mặc định**. Mỗi kỷ niệm có nút **"Tuỳ chỉnh nhắc nhở"** cho phép:
+
+- **Mốc ngày** (`ANNIVERSARY`): thêm/bớt mốc (VD thêm 520, 999 ngày), bật/tắt nhắc mỗi năm tròn.
+- **Nhắc trước bao lâu:** chọn nhiều mốc (VD trước 7 ngày, 3 ngày, 1 ngày, đúng ngày; với `DATE_PLAN` có thể theo giờ: trước 2 giờ, 30 phút).
+- **Giờ gửi** cho các nhắc theo ngày (mặc định 08:00, 20:00 với `DATE_PLAN` trước 1 ngày).
+- **Người nhận:** mình / đối phương / cả hai (với `CYCLE` và `GIFT_OCCASION`, chỉ người tạo hoặc chủ thể được đổi người nhận).
+- **Khôi phục mặc định.**
+
+Tuỳ chỉnh áp dụng **cho kỷ niệm đó** và cho cả hai người trong cặp đôi. Mặc định toàn app (theo loại) chỉnh được trong Cài đặt ở giai đoạn sau.
 - Gợi ý sẵn các dịp tặng quà phổ biến ở VN (14/2, 8/3, 20/10, 24/12, sinh nhật lấy từ hồ sơ) khi ghép đôi; người dùng bật/tắt từng dịp.
 
 #### Chu kỳ (`CYCLE`) chi tiết
@@ -293,6 +305,7 @@ moments (
   place_id         uuid NULL FK places,
   message          text NULL,                 -- lời nhắn tại thời điểm kỷ niệm
   details          jsonb NOT NULL DEFAULT '{}', -- dữ liệu riêng theo type, handler validate
+  reminder_config  jsonb NULL,                -- NULL = dùng mặc định của handler; có giá trị = tuỳ chỉnh của người dùng
   created_by       uuid FK users,
   created_at, updated_at
 )
@@ -337,6 +350,20 @@ Ví dụ `details` theo loại:
 | `GIFT_OCCASION` | `{"occasion": "BIRTHDAY" \| "VALENTINE" \| "WOMENS_DAY_8_3" \| "WOMENS_DAY_20_10" \| "CHRISTMAS" \| "OTHER"}` |
 | `CYCLE` | `{"defaultCycleLength": 28}` |
 | `CUSTOM` | `{"notify": "SELF" \| "PARTNER" \| "BOTH", "daysBefore": [3, 0]}` |
+
+`reminder_config` (mọi trường đều tuỳ chọn; trường thiếu → lấy mặc định của handler):
+
+```json
+{
+  "milestoneDays": [100, 200, 300, 365, 500, 520, 999, 1000],
+  "yearly": true,
+  "offsets": ["P7D", "P1D", "P0D", "PT2H"],
+  "sendAt": "08:00",
+  "recipients": "BOTH"
+}
+```
+
+`offsets` dùng ISO-8601 duration (khoảng thời gian trước sự kiện). Backend giới hạn: tối đa 20 mốc ngày, tối đa 5 offset, offset ≤ 30 ngày.
 
 `CYCLE`: mỗi người có tối đa một moment `CYCLE` (chủ thể = `subject_user_id`); `occurs_on` là ngày dự kiến kỳ tiếp theo, được tính lại mỗi khi có `cycle_logs` mới.
 
@@ -481,6 +508,7 @@ interface MomentTypeHandler {
   2. Gửi qua Expo Push tới mọi `device_tokens` của người nhận; kiểm tra `notify_prefs`.
   3. Thành công → `SENT`; lỗi → `attempts++`, thử lại tối đa 3 lần rồi `FAILED`.
 - **Job hằng ngày:** với moment lặp lại (YEARLY, mốc ngày, CYCLE), bổ sung reminder để luôn phủ đủ `horizon`.
+- Mỗi handler cung cấp `defaultReminderConfig()`; trước khi lập lịch, service gộp `reminder_config` của moment lên trên mặc định (`effective = defaults.merge(override)`) rồi truyền vào `planReminders`. Endpoint `PUT /api/moments/{id}/reminder-config` (body `null` = khôi phục mặc định) lưu tuỳ chỉnh và sinh lại reminder.
 - Thêm loại kỷ niệm mới = thêm một class handler; scheduler không đổi.
 
 ### 7.4 Chu kỳ
@@ -506,7 +534,7 @@ interface MomentTypeHandler {
 | Auth | `POST /api/auth/register`, `/login`, `/refresh`, `/logout` |
 | Me | `GET/PATCH /api/me`, `PUT /api/me/settings`, `PUT/DELETE /api/me/location`, `POST/DELETE /api/me/devices` |
 | Couple | `POST /api/couples/invites`, `POST /api/couples/join`, `GET /api/couples/me`, `POST /api/couples/me/end`, `GET /api/couples/distance` |
-| Moment | `GET/POST /api/moments`, `GET/PATCH/DELETE /api/moments/{id}` (lọc theo `type`, khoảng ngày) |
+| Moment | `GET/POST /api/moments`, `GET/PATCH/DELETE /api/moments/{id}` (lọc theo `type`, khoảng ngày), `PUT /api/moments/{id}/reminder-config` |
 | Cycle | `GET/POST /api/cycles/logs`, `DELETE /api/cycles/logs/{id}`, `GET /api/cycles/prediction` |
 | Trait | `GET /api/traits/{userId}`, `POST/PATCH/DELETE /api/traits/sizes/{id}`, `POST/PATCH/DELETE /api/traits/preferences/{id}` (kèm links) |
 | Media | `POST /api/media/upload-url`, `POST /api/media/{id}/confirm`, `DELETE /api/media/{id}` |
@@ -526,7 +554,7 @@ Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) tr�
 
 ## 10. Kiểm thử
 
-- **Backend unit test:** từng `MomentTypeHandler` (tính mốc 100/1000 ngày, năm nhuận, sinh nhật 29/2, chọn đúng người nhận theo vai trò, `share_cycle=false`), thuật toán dự đoán chu kỳ, haversine, sinh mã mời.
+- **Backend unit test:** từng `MomentTypeHandler` (tính mốc 100/1000 ngày, năm nhuận, sinh nhật 29/2, chọn đúng người nhận theo vai trò, `share_cycle=false`, gộp `reminder_config` tuỳ chỉnh với mặc định, giới hạn số mốc/offset), thuật toán dự đoán chu kỳ, haversine, sinh mã mời.
 - **Backend integration test (Testcontainers Postgres + MinIO):** ghép đôi (gồm 2 request song song), cô lập dữ liệu giữa hai cặp đôi, quyền `AUTHOR_ONLY`, luồng upload presigned, scheduler (`SKIP LOCKED`, retry). Expo Push được mock.
 - **Mobile:** Jest + React Native Testing Library cho form và logic hiển thị chính; test thủ công trên Android thật + iPhone thật qua development build/TestFlight.
 
@@ -542,3 +570,4 @@ Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) tr�
 | Ngày | Thay đổi |
 |---|---|
 | 2026-10-10 | Bản đầu tiên. |
+| 2026-10-10 | Mã mời hết hạn sau 1 giờ (thay vì 24h). Thêm tuỳ chỉnh nhắc nhở theo từng kỷ niệm (`reminder_config`). |
