@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { useCouple } from '@/features/couple/api';
 import { errorMessage } from '@/lib/api/client';
+import { useOnboardingRedirect } from '@/lib/use-onboarding';
 import { useNotificationRouting, usePushRegistration } from '@/lib/use-push';
 import { Button } from '@/ui/Button';
 import { ErrorText } from '@/ui/ErrorText';
@@ -13,11 +14,12 @@ export default function AppLayout() {
   const couple = useCouple();
   usePushRegistration();
   useNotificationRouting();
+  useOnboardingRedirect(couple.isSuccess ? couple.data !== null : undefined);
 
   if (couple.isPending) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.bg }}>
-        <ActivityIndicator color={colors.primary} />
+        <ActivityIndicator color={colors.roseStrong} />
       </View>
     );
   }
@@ -29,20 +31,5 @@ export default function AppLayout() {
       </Screen>
     );
   }
-
-  const paired = couple.data !== null;
-  return (
-    <Stack screenOptions={{ headerTintColor: colors.primary }}>
-      <Stack.Protected guard={paired}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="moments/new" options={{ title: 'Kỷ niệm mới' }} />
-        <Stack.Screen name="moments/[id]/index" options={{ title: 'Kỷ niệm' }} />
-        <Stack.Screen name="moments/[id]/edit" options={{ title: 'Sửa kỷ niệm' }} />
-        <Stack.Screen name="moments/[id]/reminders" options={{ title: 'Nhắc nhở' }} />
-      </Stack.Protected>
-      <Stack.Protected guard={!paired}>
-        <Stack.Screen name="pair" options={{ title: 'Ghép đôi' }} />
-      </Stack.Protected>
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }

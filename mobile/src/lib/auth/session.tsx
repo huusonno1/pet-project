@@ -13,6 +13,8 @@ type SessionValue = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, displayName: string) => Promise<void>;
   signOut: () => Promise<void>;
+  onboarding: boolean;
+  finishOnboarding: () => void;
 };
 
 const SessionContext = createContext<SessionValue | null>(null);
@@ -20,6 +22,7 @@ const SessionContext = createContext<SessionValue | null>(null);
 export function SessionProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const [status, setStatus] = useState<SessionStatus>('loading');
+  const [onboarding, setOnboarding] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -46,7 +49,10 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const value: SessionValue = {
     status,
     signIn: (email, password) => start('/api/auth/login', { email, password }),
-    signUp: (email, password, displayName) => start('/api/auth/register', { email, password, displayName }),
+    signUp: async (email, password, displayName) => {
+      await start('/api/auth/register', { email, password, displayName });
+      setOnboarding(true);
+    },
     async signOut() {
       const refreshToken = await tokenStore.getRefresh();
       if (refreshToken) {
@@ -54,8 +60,11 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
       }
       await tokenStore.clear();
       queryClient.clear();
+      setOnboarding(false);
       setStatus('signedOut');
     },
+    onboarding,
+    finishOnboarding: () => setOnboarding(false),
   };
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
