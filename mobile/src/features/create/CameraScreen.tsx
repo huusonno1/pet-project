@@ -1,8 +1,8 @@
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -30,6 +30,16 @@ export default function CameraScreen() {
   const [effect, setEffect] = useState<EffectId>('ORIGINAL');
   const [classifyOpen, setClassifyOpen] = useState(false);
   const partner = couple.data?.partner;
+
+  // Ngày chọn từ Nhật ký ("+ Thêm vào ngày này") không được giữ lại nếu người dùng rời camera mà chưa lưu gì.
+  useFocusEffect(
+    useCallback(
+      () => () => {
+        if (captureStore.get().uris.length === 0) captureStore.set({ date: '' });
+      },
+      [],
+    ),
+  );
 
   function start(uris: string[]) {
     captureStore.reset({ uris, effect, hearts: effect === 'HEARTS', date: captureStore.get().date || toIsoDate(new Date()) });

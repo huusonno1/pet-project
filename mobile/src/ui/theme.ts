@@ -20,13 +20,6 @@ export const colors = {
   scrim: 'rgba(43,26,46,0.45)',
   white: '#FFFFFF',
   toggleOff: '#D9CCC6',
-  // Tên cũ — để màn hình chưa chuyển sang v2 vẫn chạy; xoá ở Task 15
-  primary: '#C9365C',
-  primaryDark: '#A82A4B',
-  card: '#FFFFFF',
-  muted: '#6F5B6A',
-  border: '#EADFD9',
-  success: '#24795A',
 };
 
 export const fonts = {

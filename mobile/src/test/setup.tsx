@@ -43,14 +43,6 @@ jest.mock('expo-router', () => {
   };
 });
 
-jest.mock('@react-native-community/datetimepicker', () => {
-  const React = require('react');
-  const { Text } = require('react-native');
-  const Picker = (props: { mode?: string; onValueChange?: unknown }) =>
-    React.createElement(Text, { testID: 'datetimepicker', onValueChange: props.onValueChange }, props.mode ?? 'date');
-  return { __esModule: true, default: Picker, DateTimePickerAndroid: { open: jest.fn(), dismiss: jest.fn() } };
-});
-
 jest.mock('expo-location', () => ({
   requestForegroundPermissionsAsync: jest.fn(async () => ({
     granted: true,
@@ -65,8 +57,6 @@ jest.mock('expo-location', () => ({
   Accuracy: { Balanced: 3 },
 }));
 
-jest.mock('@/features/media/CameraSheet', () => ({ CameraSheet: () => null }));
-jest.mock('@/features/media/apply-filter', () => ({ applyFilter: jest.fn(async (uri: string) => uri) }));
 jest.mock('expo-image-picker', () => ({
   launchImageLibraryAsync: jest.fn(async () => ({ canceled: true, assets: null })),
 }));

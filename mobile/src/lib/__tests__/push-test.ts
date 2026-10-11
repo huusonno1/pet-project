@@ -6,12 +6,18 @@ jest.mock('expo-constants', () => ({
 }));
 
 describe('push', () => {
-  test('routeForDeepLink maps backend deep links to app routes', () => {
-    expect(routeForDeepLink('coupleapp://moments/abc-123')).toBe('/moments/abc-123');
-    expect(routeForDeepLink('coupleapp://traits/u2')).toBe('/partner');
-    expect(routeForDeepLink('coupleapp://home')).toBe('/');
-    expect(routeForDeepLink('https://evil.example/x')).toBeNull();
-    expect(routeForDeepLink(undefined)).toBeNull();
+  test.each([
+    ['coupleapp://home', '/'],
+    ['coupleapp://', '/'],
+    ['coupleapp://notes', '/notes'],
+    ['coupleapp://pair/requests', '/pair/requests'],
+    ['coupleapp://moments/abc-123', '/moments/abc-123'],
+    ['coupleapp://traits/u2', '/partner'],
+    ['https://evil.example', null],
+    ['coupleapp://unknown', null],
+    [42, null],
+  ])('deep link %p -> %p', (url, route) => {
+    expect(routeForDeepLink(url)).toBe(route);
   });
 
   test('registers and remembers the Expo push token', async () => {

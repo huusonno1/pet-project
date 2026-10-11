@@ -55,6 +55,15 @@ npx eas-cli@latest build --profile development --platform ios
 npx expo start --dev-client
 ```
 
+### Giao diện (UI v2)
+
+Thiết kế: `docs/design/mock-v2/` (bản sống: canvas "Couple App · Mock v2"). Tab: Trang chủ · Nhật ký · + · Người ấy · Tôi.
+
+- Chưa ghép đôi vẫn dùng được: Nhật ký/Khoảnh khắc riêng, nhắc tự đặt, chu kỳ. Ghép đôi bằng mã mời, nhập mã hoặc tìm theo ID.
+- Nút + mở camera; chụp/chọn ảnh → hiệu ứng → lưu thành **Khoảnh khắc** (không nhắc) hoặc **mốc cần nhớ** (có nhắc, lặp tuần/tháng/năm).
+- Đăng nhập Apple/Google/Facebook: mới có nút, bấm báo "Sắp ra mắt" (backend chưa hỗ trợ).
+- Hiệu ứng "Tai thỏ" đặt cố định, chưa nhận diện khuôn mặt.
+
 ## API GĐ1 (tóm tắt)
 
 Mọi endpoint (trừ `/api/auth/**`) cần header `Authorization: Bearer <accessToken>`. Lỗi trả dạng RFC 7807 kèm `code`.
