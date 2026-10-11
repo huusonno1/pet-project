@@ -19,6 +19,7 @@ class PairingNotifier {
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     void onPaired(CouplePairedEvent e) {
         String name = users.findById(e.joinerId()).map(User::getDisplayName).orElse("Người ấy");
-        notifications.sendNow(e.inviterId(), "💞 Ghép đôi thành công", name + " đã ghép đôi với bạn", "coupleapp://home");
+        notifications.sendNow(e.inviterId(), "PAIRED", "💞 Ghép đôi thành công", name + " đã ghép đôi với bạn",
+                "coupleapp://home");
     }
 }

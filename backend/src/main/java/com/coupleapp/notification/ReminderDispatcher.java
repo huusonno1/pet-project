@@ -30,6 +30,7 @@ public class ReminderDispatcher {
     private final DeviceTokenRepository devices;
     private final UserSettingsRepository settings;
     private final PushSender push;
+    private final InboxService inbox;
     private final Clock clock;
 
     /** Xử lý một lô nhắc đến hạn. Dòng bị khoá bởi instance khác được bỏ qua (SKIP LOCKED). */
@@ -98,8 +99,9 @@ public class ReminderDispatcher {
         }
     }
 
-    private static void markSent(Reminder r, Instant now) {
+    private void markSent(Reminder r, Instant now) {
         r.setStatus(ReminderStatus.SENT);
         r.setSentAt(now);
+        inbox.record(r.getRecipientId(), "REMINDER", r.getTitle(), r.getBody(), r.getDeepLink());
     }
 }
