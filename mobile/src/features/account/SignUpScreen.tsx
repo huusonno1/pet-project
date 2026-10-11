@@ -1,20 +1,34 @@
-import { router } from 'expo-router';
 import { useState } from 'react';
+import { View } from 'react-native';
 
 import { errorMessage } from '@/lib/api/client';
 import { useSession } from '@/lib/auth/session';
+import { AppText } from '@/ui/AppText';
 import { Button } from '@/ui/Button';
 import { ErrorText } from '@/ui/ErrorText';
 import { Screen } from '@/ui/Screen';
+import { SocialButton } from '@/ui/SocialButton';
 import { TextField } from '@/ui/TextField';
-import { Title } from '@/ui/Title';
+import { colors } from '@/ui/theme';
+import { TopBar } from '@/ui/TopBar';
 
-export function validateSignUp(name: string, email: string, password: string, confirm: string): string | null {
+import { socialComingSoon } from './social';
+
+export function validateSignUp(name: string, email: string, password: string): string | null {
   if (!name.trim()) return 'Nhập tên hiển thị';
   if (!/^\S+@\S+\.\S+$/.test(email.trim())) return 'Email không hợp lệ';
   if (password.length < 8) return 'Mật khẩu tối thiểu 8 ký tự';
-  if (password !== confirm) return 'Mật khẩu nhập lại không khớp';
   return null;
+}
+
+export function OrDivider({ label }: { label: string }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      <View style={{ flex: 1, height: 1, backgroundColor: colors.line }} />
+      <AppText variant="caption" color={colors.textMuted}>{label}</AppText>
+      <View style={{ flex: 1, height: 1, backgroundColor: colors.line }} />
+    </View>
+  );
 }
 
 export default function SignUpScreen() {
@@ -22,12 +36,11 @@ export default function SignUpScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   async function submit() {
-    const problem = validateSignUp(name, email, password, confirm);
+    const problem = validateSignUp(name, email, password);
     if (problem) {
       setError(problem);
       return;
@@ -44,15 +57,21 @@ export default function SignUpScreen() {
   }
 
   return (
-    <Screen>
-      <Title>Tạo tài khoản</Title>
+    <Screen gap={12}>
+      <TopBar right={<AppText variant="caption" color={colors.textMuted}>Bước 1/2</AppText>} />
+      <View style={{ gap: 6, marginBottom: 4 }}>
+        <AppText variant="display">Tạo tài khoản</AppText>
+        <AppText color={colors.textMuted}>Đăng ký nhanh bằng tài khoản có sẵn.</AppText>
+      </View>
+      <SocialButton provider="apple" onPress={() => socialComingSoon('apple')} />
+      <SocialButton provider="google" onPress={() => socialComingSoon('google')} />
+      <SocialButton provider="facebook" onPress={() => socialComingSoon('facebook')} />
+      <OrDivider label="hoặc dùng email" />
       <TextField label="Tên hiển thị" value={name} onChangeText={setName} />
       <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" />
       <TextField label="Mật khẩu" value={password} onChangeText={setPassword} secureTextEntry />
-      <TextField label="Nhập lại mật khẩu" value={confirm} onChangeText={setConfirm} secureTextEntry />
       <ErrorText message={error} />
       <Button title="Tạo tài khoản" onPress={submit} loading={loading} />
-      <Button title="Đã có tài khoản? Đăng nhập" variant="secondary" onPress={() => router.back()} />
     </Screen>
   );
 }
