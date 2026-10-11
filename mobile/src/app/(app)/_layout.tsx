@@ -3,6 +3,7 @@ import { ActivityIndicator, View } from 'react-native';
 
 import { useCouple } from '@/features/couple/api';
 import { errorMessage } from '@/lib/api/client';
+import { useLiveSync } from '@/lib/use-live-sync';
 import { useOnboardingRedirect } from '@/lib/use-onboarding';
 import { useNotificationRouting, usePushRegistration } from '@/lib/use-push';
 import { Button } from '@/ui/Button';
@@ -14,6 +15,7 @@ export default function AppLayout() {
   const couple = useCouple();
   usePushRegistration();
   useNotificationRouting();
+  useLiveSync();
   useOnboardingRedirect(couple.isSuccess ? couple.data !== null : undefined);
 
   if (couple.isPending) {

@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 
 export function createQueryClient() {
-  return new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
+  return new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchInterval: 60_000 } } });
 }
 
 export const keys = {

@@ -17,7 +17,7 @@ Thiết kế: `docs/superpowers/specs/2026-10-10-couple-app-design.md`.
 
 ```bash
 docker compose up -d                 # Postgres :5432, Redis :6379, MinIO :9000 (console :9001)
-cd backend && ./mvnw spring-boot:run # API :8080
+cd backend && ./dev.sh               # API :8080 (tự đặt URL ảnh theo IP LAN)
 cd mobile && npx expo start          # quét QR bằng Expo Go / development build
 ```
 
@@ -40,8 +40,8 @@ npx expo start              # quét QR bằng Expo Go
 npm test                    # unit/screen tests
 ```
 
-Chạy backend cho điện thoại thật: `APP_STORAGE_PUBLIC_ENDPOINT=http://<IP-LAN>:9000 ./mvnw spring-boot:run`
-(để URL ảnh presigned trỏ về IP mà điện thoại truy cập được).
+Chạy backend cho điện thoại thật bằng `backend/dev.sh` (tự đặt `APP_STORAGE_PUBLIC_ENDPOINT=http://<IP-LAN>:9000`;
+nếu chạy `./mvnw spring-boot:run` trơn thì URL ảnh là localhost → điện thoại tải ảnh lên sẽ lỗi).
 
 **Expo Go** chạy được mọi thứ trừ **push notification trên Android**. Để nhận push cần development build:
 

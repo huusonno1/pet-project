@@ -23,6 +23,7 @@ import { useLoveNotes, useMarkNoteSeen, useSendNote } from './api';
 import { DrawPad } from './DrawPad';
 import { PEN_COLORS, Stroke } from './drawing';
 import { exportDrawing } from './export-drawing';
+import { imageCacheKey } from '@/lib/image-cache';
 
 const QUICK = ['Nhớ quá', 'Ăn gì chưa?', 'Yêu nhiều'];
 
@@ -94,7 +95,7 @@ function Bubble({ note, mine }: { note: LoveNote; mine: boolean }) {
     <View style={{ flexDirection: 'row', justifyContent: mine ? 'flex-end' : 'flex-start' }}>
       <View style={[styles.bubble, mine ? styles.mine : styles.theirs]}>
         {note.drawing ? (
-          <Image source={{ uri: note.drawing.url }} style={{ width: 200, height: 200, borderRadius: 14, backgroundColor: colors.surface }} accessibilityLabel="Hình vẽ tay" />
+          <Image source={{ uri: note.drawing.url, cacheKey: imageCacheKey(note.drawing.url) }} style={{ width: 200, height: 200, borderRadius: 14, backgroundColor: colors.surface }} accessibilityLabel="Hình vẽ tay" />
         ) : null}
         {note.text ? <AppText testID="note-text" color={mine ? colors.white : colors.text}>{note.text}</AppText> : null}
         <AppText variant="micro" color={mine ? colors.roseSoft : colors.textMuted} style={{ letterSpacing: 0 }}>

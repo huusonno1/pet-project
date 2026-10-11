@@ -3,6 +3,7 @@ import { View } from 'react-native';
 
 import { AppText } from './AppText';
 import { colors } from './theme';
+import { imageCacheKey } from '@/lib/image-cache';
 
 const TONES = {
   rose: { bg: colors.roseSoft, fg: colors.roseStrong },
@@ -16,7 +17,7 @@ export function Avatar({ name, tone = 'rose', size = 48, uri, ring }: Props) {
   const t = TONES[tone];
   const box = { width: size, height: size, borderRadius: size / 2, borderWidth: ring ? 3 : 0, borderColor: colors.white };
   if (uri) {
-    return <Image source={{ uri }} style={box} contentFit="cover" accessibilityLabel={name} />;
+    return <Image source={{ uri, cacheKey: imageCacheKey(uri) }} style={box} contentFit="cover" accessibilityLabel={name} />;
   }
   return (
     <View accessibilityLabel={name} style={[box, { backgroundColor: t.bg, alignItems: 'center', justifyContent: 'center' }]}>
