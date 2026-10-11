@@ -3,6 +3,7 @@ package com.coupleapp.media;
 import com.coupleapp.common.ApiException;
 import com.coupleapp.common.ErrorCode;
 import com.coupleapp.couple.CoupleAccess;
+import com.coupleapp.couple.CoupleContext;
 import com.coupleapp.media.MediaDtos.MediaDto;
 import com.coupleapp.media.MediaDtos.Purpose;
 import com.coupleapp.media.MediaDtos.UploadUrlRequest;
@@ -73,10 +74,12 @@ public class MediaService {
         if (r.purpose() == Purpose.AVATAR) {
             m.setObjectKey("users/%s/avatar/%s.%s".formatted(userId, m.getId(), ext));
         } else {
-            UUID coupleId = couples.requireActive(userId).coupleId();
             ZonedDateTime t = now.atZone(ZoneOffset.UTC);
+            UUID coupleId = couples.findActive(userId).map(CoupleContext::coupleId).orElse(null);
             m.setCoupleId(coupleId);
-            m.setObjectKey("couples/%s/%d/%02d/%s.%s".formatted(coupleId, t.getYear(), t.getMonthValue(), m.getId(), ext));
+            m.setObjectKey(coupleId != null
+                    ? "couples/%s/%d/%02d/%s.%s".formatted(coupleId, t.getYear(), t.getMonthValue(), m.getId(), ext)
+                    : "users/%s/moments/%d/%02d/%s.%s".formatted(userId, t.getYear(), t.getMonthValue(), m.getId(), ext));
         }
         media.save(m);
 
@@ -126,9 +129,9 @@ public class MediaService {
         return ids.stream().map(byId::get).filter(Objects::nonNull).map(this::toDto).toList();
     }
 
-    /** Ảnh gắn vào nội dung chung phải READY, thuộc đúng cặp đôi và không trùng lặp. */
+    /** Ảnh phải READY, không trùng; coupleId != null → thuộc cặp đôi đó; null → ảnh riêng do userId tải lên. */
     @Transactional(readOnly = true)
-    public void requireUsable(List<UUID> ids, UUID coupleId) {
+    public void requireUsable(List<UUID> ids, UUID coupleId, UUID userId) {
         if (ids.isEmpty()) {
             return;
         }
@@ -136,8 +139,10 @@ public class MediaService {
             throw invalid("Danh sách ảnh bị trùng");
         }
         List<Media> found = media.findAllById(ids);
-        boolean ok = found.size() == ids.size() && found.stream()
-                .allMatch(m -> m.getStatus() == MediaStatus.READY && coupleId.equals(m.getCoupleId()));
+        boolean ok = found.size() == ids.size() && found.stream().allMatch(m -> m.getStatus() == MediaStatus.READY
+                && (coupleId != null
+                        ? coupleId.equals(m.getCoupleId())
+                        : m.getCoupleId() == null && m.getUploaderId().equals(userId)));
         if (!ok) {
             throw invalid("Ảnh không hợp lệ");
         }

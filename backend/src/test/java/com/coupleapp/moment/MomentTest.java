@@ -275,6 +275,7 @@ class MomentTest extends IntegrationTest {
     @Test
     void requiresCouple() throws Exception {
         String hoa = register("hoa@x.vn", "Hoa");
-        get("/api/moments", hoa).andExpect(jsonPath("$.code").value("COUPLE_REQUIRED"));
+        post("/api/moments", hoa, Map.of("type", "ANNIVERSARY", "title", "Yêu", "occursOn", today().toString()))
+                .andExpect(jsonPath("$.code").value("COUPLE_REQUIRED"));
     }
 }

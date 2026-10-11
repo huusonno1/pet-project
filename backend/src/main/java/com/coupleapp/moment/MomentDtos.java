@@ -49,7 +49,8 @@ public final class MomentDtos {
             UUID id, MomentType type, String title, LocalDate occursOn, Instant occursAt, Recurrence recurrence,
             UUID subjectUserId, String message, Map<String, Object> details,
             ReminderConfig reminderConfig, ReminderConfig effectiveReminderConfig,
-            PlaceDto place, List<MediaDto> media, UUID createdBy, Instant createdAt, Instant updatedAt) {}
+            PlaceDto place, List<MediaDto> media, UUID createdBy, Instant createdAt, Instant updatedAt,
+            boolean personal) {}
 
     public record ReminderDto(UUID id, Instant fireAt, String title, String body, String deepLink) {}
 }

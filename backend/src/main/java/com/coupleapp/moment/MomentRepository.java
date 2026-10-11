@@ -12,6 +12,8 @@ public interface MomentRepository extends JpaRepository<Moment, UUID> {
 
     List<Moment> findByCoupleIdOrderByOccursOnAsc(UUID coupleId);
 
+    List<Moment> findByCoupleIdIsNullAndCreatedByOrderByOccursOnAsc(UUID createdBy);
+
     Optional<Moment> findFirstByCoupleIdAndTypeAndSubjectUserId(UUID coupleId, MomentType type, UUID subjectUserId);
 
     List<Moment> findByTypeAndOccursOnBefore(MomentType type, LocalDate date);

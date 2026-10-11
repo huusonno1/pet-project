@@ -27,6 +27,9 @@ public class ReminderPlanner {
                 for (Role role : audience.roles()) {
                     ZoneId zone = role == Role.OWNER ? ctx.ownerZone() : ctx.partnerZone();
                     UUID recipient = role == Role.OWNER ? ctx.ownerId() : ctx.partnerId();
+                    if (recipient == null) {
+                        continue; // kỷ niệm riêng: không có người ấy
+                    }
                     Instant fireAt = fireAt(o, offset, cfg.sendAtTime(), zone);
                     if (fireAt.isAfter(ctx.now()) && !fireAt.isAfter(ctx.horizon())) {
                         Message msg = handler.message(m, o, role, offset, ctx);
