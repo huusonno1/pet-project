@@ -8,7 +8,8 @@ import com.coupleapp.couple.CoupleDtos.PartnerDto;
 import com.coupleapp.couple.InviteService.Invite;
 import com.coupleapp.couple.InviteService.InvitePayload;
 import com.coupleapp.user.User;
-import com.coupleapp.user.UserRepository;
+import com.coupleapp.user.UserDirectory;
+import com.coupleapp.user.UserDtos.UserCard;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -27,7 +28,7 @@ public class CoupleService {
     private final CoupleMemberRepository members;
     private final CoupleAccess access;
     private final InviteService invites;
-    private final UserRepository users;
+    private final UserDirectory directory;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
@@ -99,9 +100,10 @@ public class CoupleService {
     }
 
     private CoupleResponse toResponse(Couple couple, UUID partnerId) {
-        User partner = users.findById(partnerId).orElseThrow(ApiException::notFound);
+        UserCard card = directory.card(partnerId);
+        LocalDate birthday = directory.find(partnerId).map(User::getBirthday).orElse(null);
         return new CoupleResponse(couple.getId(), couple.getStartedDatingOn(), couple.getCreatedAt(),
-                new PartnerDto(partner.getId(), partner.getDisplayName()));
+                new PartnerDto(card.id(), card.displayName(), card.handle(), birthday, card.avatarUrl()));
     }
 
     private static ApiException invalidInvite() {

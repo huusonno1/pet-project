@@ -17,7 +17,7 @@ public final class CoupleDtos {
 
     public record JoinRequest(@NotBlank @Size(max = 20) String code, @PastOrPresent LocalDate startedDatingOn) {}
 
-    public record PartnerDto(UUID id, String displayName) {}
+    public record PartnerDto(UUID id, String displayName, String handle, LocalDate birthday, String avatarUrl) {}
 
     public record CoupleResponse(UUID id, LocalDate startedDatingOn, Instant createdAt, PartnerDto partner) {}
 

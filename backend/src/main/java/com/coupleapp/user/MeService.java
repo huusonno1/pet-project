@@ -87,6 +87,7 @@ public class MeService {
         UserSettings s = settings.findById(userId).orElseGet(() -> new UserSettings(userId));
         boolean locationBefore = s.isShareLocation();
         boolean cycleBefore = s.isShareCycle();
+        boolean trackingBefore = s.isCycleTracking();
         if (r.shareLocation() != null) {
             s.setShareLocation(r.shareLocation());
         }
@@ -110,7 +111,8 @@ public class MeService {
         settings.save(s);
         events.publishEvent(new UserSettingsChangedEvent(
                 userId, s.isShareLocation(), s.isShareCycle(),
-                locationBefore != s.isShareLocation(), cycleBefore != s.isShareCycle()));
+                locationBefore != s.isShareLocation(), cycleBefore != s.isShareCycle(),
+                trackingBefore != s.isCycleTracking()));
         return toResponse(s);
     }
 

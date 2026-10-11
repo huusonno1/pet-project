@@ -43,6 +43,9 @@ public class CycleService {
 
     @Transactional
     public CycleLogDto addLog(UUID userId, CycleLogRequest r) {
+        if (!settingsOf(userId).isCycleTracking()) {
+            throw invalid("Hãy bật theo dõi chu kỳ trước");
+        }
         if (r.periodStart().isAfter(today(userId))) {
             throw invalid("Ngày bắt đầu không được ở tương lai");
         }
@@ -79,7 +82,8 @@ public class CycleService {
     public PredictionResponse prediction(UUID viewer, UUID subject) {
         if (!viewer.equals(subject)) {
             couples.findActive(viewer).filter(c -> c.partnerId().equals(subject)).orElseThrow(ApiException::notFound);
-            if (!settingsOf(subject).isShareCycle()) {
+            UserSettings s = settingsOf(subject);
+            if (!s.isCycleTracking() || !s.isShareCycle()) {
                 throw ApiException.notFound();
             }
         }
@@ -105,6 +109,10 @@ public class CycleService {
         }
         Optional<Moment> existing =
                 moments.findFirstByCoupleIdAndTypeAndSubjectUserId(c.get().coupleId(), MomentType.CYCLE, userId);
+        if (!settingsOf(userId).isCycleTracking()) {
+            existing.ifPresent(moments::delete); // reminders xoá theo ON DELETE CASCADE
+            return;
+        }
         Optional<Prediction> p = predict(userId);
         if (p.isEmpty()) {
             existing.ifPresent(moments::delete);

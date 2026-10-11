@@ -67,6 +67,10 @@ public abstract class IntegrationTest {
         return mvc.perform(withBody(MockMvcRequestBuilders.put(url), token, body));
     }
 
+    protected void enableCycleTracking(String token) throws Exception {
+        put("/api/me/settings", token, Map.of("cycleTracking", true)).andExpect(status().isOk());
+    }
+
     protected ResultActions patch(String url, String token, Object body) throws Exception {
         return mvc.perform(withBody(MockMvcRequestBuilders.patch(url), token, body));
     }
