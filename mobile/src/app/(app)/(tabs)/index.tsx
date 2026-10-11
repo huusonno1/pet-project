@@ -1,8 +1,8 @@
 import { useCouple } from '@/features/couple/api';
-import PairScreen from '@/features/couple/PairScreen';
+import SoloHomeScreen from '@/features/couple/SoloHomeScreen';
 import HomeScreen from '@/features/home/HomeScreen';
 
 export default function HomeTab() {
   const couple = useCouple();
-  return couple.data ? <HomeScreen /> : <PairScreen />;
+  return couple.data ? <HomeScreen /> : <SoloHomeScreen />;
 }

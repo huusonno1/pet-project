@@ -87,6 +87,7 @@ jest.mock('expo-notifications', () => ({
   addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
   AndroidImportance: { MAX: 5 },
 }));
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true) }));
 jest.mock('expo-device', () => ({ __esModule: true, isDevice: true }));
 
 beforeEach(() => {
