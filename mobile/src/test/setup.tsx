@@ -94,3 +94,15 @@ beforeEach(() => {
   (require('expo-secure-store').__store as Map<string, string>).clear();
   jest.clearAllMocks();
 });
+
+jest.mock('@/features/notes/DrawPad', () => {
+  const { Pressable, Text } = require('react-native');
+  return {
+    DrawPad: ({ onChange, color }: { onChange: (s: unknown[]) => void; color: string }) => (
+      <Pressable accessibilityLabel="Vùng vẽ" onPress={() => onChange([{ color, points: [{ x: 1, y: 1 }, { x: 9, y: 9 }] }])}>
+        <Text>draw</Text>
+      </Pressable>
+    ),
+  };
+});
+jest.mock('@/features/notes/export-drawing', () => ({ exportDrawing: jest.fn(async () => 'file:///drawing.png') }));

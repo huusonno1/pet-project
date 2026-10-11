@@ -64,7 +64,7 @@
   "jest": {
     "preset": "jest-expo",
     "setupFilesAfterEnv": [
-      "./src/test/setup.ts"
+      "./src/test/setup.tsx"
     ],
     "testMatch": [
       "**/__tests__/**/*-test.[jt]s?(x)"
