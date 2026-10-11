@@ -1,10 +1,12 @@
 package com.coupleapp.couple;
 
+import com.coupleapp.user.UserDtos.UserCard;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public final class CoupleDtos {
@@ -18,4 +20,12 @@ public final class CoupleDtos {
     public record PartnerDto(UUID id, String displayName) {}
 
     public record CoupleResponse(UUID id, LocalDate startedDatingOn, Instant createdAt, PartnerDto partner) {}
+
+    public record SendPairRequest(@NotBlank @Size(max = 40) String handle) {}
+
+    public record AcceptPairRequest(@PastOrPresent LocalDate startedDatingOn) {}
+
+    public record PairRequestDto(UUID id, UserCard user, Instant createdAt, Instant expiresAt) {}
+
+    public record PairRequestsResponse(List<PairRequestDto> incoming, List<PairRequestDto> outgoing) {}
 }

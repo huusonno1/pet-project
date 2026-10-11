@@ -28,4 +28,6 @@ public final class UserDtos {
     public record UpdateSettingsRequest(
             Boolean shareLocation, Boolean shareCycle, Map<String, Boolean> notifyPrefs,
             Boolean discoverable, Boolean cycleTracking) {}
+
+    public record UserCard(UUID id, String displayName, String handle, String avatarUrl) {}
 }
