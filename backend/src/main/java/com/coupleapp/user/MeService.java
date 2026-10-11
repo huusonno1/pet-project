@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +42,17 @@ public class MeService {
         if (r.displayName() != null) {
             u.setDisplayName(r.displayName().trim());
         }
+        if (r.handle() != null) {
+            String h = Handles.normalize(r.handle());
+            if (!Handles.VALID.matcher(h).matches()) {
+                throw new ApiException(ErrorCode.VALIDATION_FAILED,
+                        "ID chỉ gồm chữ thường, số, dấu chấm, gạch dưới (3–30 ký tự)");
+            }
+            if (!h.equalsIgnoreCase(u.getHandle()) && users.existsByHandleIgnoreCase(h)) {
+                throw handleTaken();
+            }
+            u.setHandle(h);
+        }
         if (r.birthday() != null) {
             u.setBirthday(r.birthday());
         }
@@ -57,6 +69,11 @@ public class MeService {
             u.setAvatarMediaId(r.avatarMediaId());
         }
         u.setUpdatedAt(clock.instant());
+        try {
+            users.flush();
+        } catch (DataIntegrityViolationException e) {
+            throw handleTaken();
+        }
         return toResponse(u);
     }
 
@@ -75,6 +92,12 @@ public class MeService {
         }
         if (r.shareCycle() != null) {
             s.setShareCycle(r.shareCycle());
+        }
+        if (r.discoverable() != null) {
+            s.setDiscoverable(r.discoverable());
+        }
+        if (r.cycleTracking() != null) {
+            s.setCycleTracking(r.cycleTracking());
         }
         if (r.notifyPrefs() != null) {
             for (Map.Entry<String, Boolean> e : r.notifyPrefs().entrySet()) {
@@ -97,11 +120,17 @@ public class MeService {
 
     MeResponse toResponse(User u) {
         String avatarUrl = u.getAvatarMediaId() == null ? null : media.avatarUrl(u.getAvatarMediaId()).orElse(null);
-        return new MeResponse(u.getId(), u.getEmail(), u.getDisplayName(), u.getBirthday(), u.getTimezone(), avatarUrl);
+        return new MeResponse(u.getId(), u.getEmail(), u.getDisplayName(), u.getHandle(), u.getBirthday(),
+                u.getTimezone(), avatarUrl);
     }
 
     private static SettingsResponse toResponse(UserSettings s) {
         return new SettingsResponse(
-                s.isShareLocation(), s.isShareCycle(), s.getCycleLengthDefault(), Map.copyOf(s.getNotifyPrefs()));
+                s.isShareLocation(), s.isShareCycle(), s.getCycleLengthDefault(), Map.copyOf(s.getNotifyPrefs()),
+                s.isDiscoverable(), s.isCycleTracking());
+    }
+
+    private static ApiException handleTaken() {
+        return new ApiException(ErrorCode.HANDLE_TAKEN, "ID này đã có người dùng");
     }
 }

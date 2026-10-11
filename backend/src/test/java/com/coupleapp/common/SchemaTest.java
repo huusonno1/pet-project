@@ -51,9 +51,27 @@ class SchemaTest extends IntegrationTest {
         assertThatThrownBy(() -> insertUser("LAN@x.vn")).isInstanceOf(DataIntegrityViolationException.class);
     }
 
+    @Test
+    void uiV2TablesExist() {
+        List<String> tables = jdbc.queryForList(
+                "select tablename from pg_tables where schemaname = 'public'", String.class);
+        assertThat(tables).contains("love_notes", "notifications", "pair_requests");
+    }
+
+    @Test
+    void handleIsUniqueIgnoringCase() {
+        insertUser("a@x.vn", "lan.2001");
+        assertThatThrownBy(() -> insertUser("b@x.vn", "LAN.2001")).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
     private UUID insertUser(String email) {
+        return insertUser(email, "u" + UUID.randomUUID().toString().substring(0, 8));
+    }
+
+    private UUID insertUser(String email, String handle) {
         UUID id = UUID.randomUUID();
-        jdbc.update("insert into users(id, email, password_hash, display_name) values (?, ?, 'h', 'U')", id, email);
+        jdbc.update("insert into users(id, email, password_hash, display_name, handle) values (?, ?, 'h', 'U', ?)",
+                id, email, handle);
         return id;
     }
 

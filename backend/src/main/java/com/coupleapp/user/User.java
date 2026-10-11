@@ -27,6 +27,7 @@ public class User {
     private String email;
     private String passwordHash;
     private String displayName;
+    private String handle;
     private UUID avatarMediaId;
     private LocalDate birthday;
     private String timezone = "Asia/Ho_Chi_Minh";

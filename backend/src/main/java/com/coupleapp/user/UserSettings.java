@@ -25,6 +25,8 @@ public class UserSettings {
     private boolean shareLocation = true;
     private boolean shareCycle = true;
     private int cycleLengthDefault = 28;
+    private boolean discoverable = true;
+    private boolean cycleTracking = false;
 
     @JdbcTypeCode(SqlTypes.JSON)
     private Map<String, Boolean> notifyPrefs = new HashMap<>();

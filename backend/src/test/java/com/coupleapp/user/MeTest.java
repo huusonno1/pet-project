@@ -74,6 +74,39 @@ class MeTest extends IntegrationTest {
         post("/api/me/devices", lan, Map.of("token", "t", "platform", "windows")).andExpect(status().isBadRequest());
     }
 
+    @Test
+    void registrationGeneratesHandleFromDisplayName() throws Exception {
+        String t = register("duc.h@x.vn", "Đức Anh");
+        String handle = read(get("/api/me", t).andExpect(status().isOk())).get("handle").asText();
+        assertThat(handle).matches("^ducanh\\d{4}$");
+    }
+
+    @Test
+    void handleCanBeChangedAndIsUniqueIgnoringCase() throws Exception {
+        String lan = register("lan.h@x.vn", "Lan");
+        String minh = register("minh.h@x.vn", "Minh");
+        patch("/api/me", lan, Map.of("handle", "@Lan.2001"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.handle").value("lan.2001"));
+        patch("/api/me", minh, Map.of("handle", "LAN.2001"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("HANDLE_TAKEN"));
+        patch("/api/me", minh, Map.of("handle", "ab")).andExpect(status().isBadRequest());
+        patch("/api/me", lan, Map.of("handle", "lan.2001")).andExpect(status().isOk());
+    }
+
+    @Test
+    void settingsExposeDiscoverableAndCycleTracking() throws Exception {
+        String t = register("sa.h@x.vn", "Sa");
+        get("/api/me/settings", t)
+                .andExpect(jsonPath("$.discoverable").value(true))
+                .andExpect(jsonPath("$.cycleTracking").value(false));
+        put("/api/me/settings", t, Map.of("discoverable", false, "cycleTracking", true))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.discoverable").value(false))
+                .andExpect(jsonPath("$.cycleTracking").value(true));
+    }
+
     private int countDevices(String userId) {
         return jdbc.queryForObject("select count(*) from device_tokens where user_id = ?::uuid", Integer.class, userId);
     }
