@@ -1,38 +1,27 @@
-import { StyleSheet, Text, TextInput, TextInputProps, View } from 'react-native';
+import { StyleSheet, TextInput, TextInputProps, View } from 'react-native';
 
-import { ErrorText } from './ErrorText';
-import { colors, radius, spacing } from './theme';
+import { AppText } from './AppText';
+import { colors, fonts } from './theme';
 
 type Props = TextInputProps & { label: string; error?: string | null };
 
-export function TextField({ label, error, style, ...input }: Props) {
+export function TextField({ label, error, style, multiline, ...input }: Props) {
   return (
-    <View style={styles.wrap}>
-      <Text style={styles.label}>{label}</Text>
+    <View style={{ gap: 6 }}>
+      <AppText variant="caption" color={colors.textMuted}>{label}</AppText>
       <TextInput
         accessibilityLabel={label}
-        placeholderTextColor={colors.muted}
-        style={[styles.input, input.multiline && styles.multiline, error ? styles.inputError : null, style]}
+        placeholderTextColor={colors.textMuted}
+        multiline={multiline}
+        style={[styles.input, multiline && styles.multi, !!error && { borderColor: colors.danger }, style]}
         {...input}
       />
-      <ErrorText message={error} />
+      {error ? <AppText variant="caption" color={colors.danger}>{error}</AppText> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  wrap: { marginBottom: spacing.md },
-  label: { color: colors.text, fontWeight: '500', marginBottom: spacing.xs },
-  input: {
-    minHeight: 44,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.md,
-    backgroundColor: colors.card,
-    color: colors.text,
-    fontSize: 16,
-  },
-  multiline: { minHeight: 96, paddingTop: spacing.sm, textAlignVertical: 'top' },
-  inputError: { borderColor: colors.danger },
+  input: { minHeight: 48, borderRadius: 16, borderWidth: 1.5, borderColor: colors.line, backgroundColor: colors.surface, paddingHorizontal: 14, fontFamily: fonts.regular, fontSize: 15, color: colors.text },
+  multi: { minHeight: 76, paddingTop: 12, textAlignVertical: 'top' },
 });

@@ -1,3 +1,11 @@
+import {
+  BeVietnamPro_400Regular,
+  BeVietnamPro_500Medium,
+  BeVietnamPro_600SemiBold,
+  BeVietnamPro_700Bold,
+  BeVietnamPro_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/be-vietnam-pro';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -22,15 +30,20 @@ export default function RootLayout() {
 function RootNavigator() {
   const { status } = useSession();
 
-  useEffect(() => {
-    if (status !== 'loading') {
-      SplashScreen.hideAsync();
-    }
-  }, [status]);
+  const [fontsLoaded] = useFonts({
+    BeVietnamPro_400Regular,
+    BeVietnamPro_500Medium,
+    BeVietnamPro_600SemiBold,
+    BeVietnamPro_700Bold,
+    BeVietnamPro_800ExtraBold,
+  });
+  const ready = status !== 'loading' && fontsLoaded;
 
-  if (status === 'loading') {
-    return null;
-  }
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!ready) return null;
   const signedIn = status === 'signedIn';
   return (
     <Stack screenOptions={{ headerShown: false }}>

@@ -3,6 +3,12 @@ import { configure } from '@testing-library/react-native';
 // Màn hình có chuỗi request phụ thuộc nhau (me → couple → dữ liệu) — 1s mặc định dễ chập chờn
 configure({ asyncUtilTimeout: 5000 });
 
+jest.mock('react-native-safe-area-context', () => require('react-native-safe-area-context/jest/mock').default);
+jest.mock('expo-linear-gradient', () => {
+  const { View } = require('react-native');
+  return { LinearGradient: View };
+});
+
 jest.mock('expo-secure-store', () => {
   const store = new Map<string, string>();
   return {
