@@ -29,7 +29,8 @@ public final class MomentDtos {
             Map<String, Object> details,
             @Valid PlaceInput place,
             UUID placeId,
-            @Size(max = 30) List<UUID> mediaIds) {}
+            @Size(max = 30) List<UUID> mediaIds,
+            Boolean notifyPartner) {}
 
     /** Trường null = giữ nguyên. */
     public record UpdateMomentRequest(

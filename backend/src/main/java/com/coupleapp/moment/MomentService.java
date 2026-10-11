@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +41,7 @@ public class MomentService {
     private final MediaService media;
     private final UserSettingsRepository settings;
     private final Clock clock;
+    private final ApplicationEventPublisher events;
 
     @Transactional
     public MomentResponse create(UUID userId, CreateMomentRequest r) {
@@ -66,6 +68,11 @@ public class MomentService {
         scheduler.handler(m.getType()).validate(m);
         moments.save(m);
         scheduler.replan(m);
+        if (m.getType() == MomentType.MOMENT && Boolean.TRUE.equals(r.notifyPartner())) {
+            Object mood = m.getDetails().get("mood");
+            events.publishEvent(new MomentCapturedEvent(m.getId(), userId, c.partnerId(),
+                    mood == null ? null : mood.toString()));
+        }
         return toResponse(m);
     }
 
@@ -112,6 +119,9 @@ public class MomentService {
     public MomentResponse setReminderConfig(UUID userId, UUID id, ReminderConfig config) {
         CoupleContext c = couples.requireActive(userId);
         Moment m = loadEditable(c, id);
+        if (m.getType() == MomentType.MOMENT) {
+            throw new ApiException(ErrorCode.VALIDATION_FAILED, "Khoảnh khắc không có nhắc nhở");
+        }
         if (config != null) {
             config.validate();
         }
@@ -184,7 +194,7 @@ public class MomentService {
         if (repeating && type != MomentType.CUSTOM && type != MomentType.DATE_PLAN) {
             throw new ApiException(ErrorCode.VALIDATION_FAILED, "Chỉ kỷ niệm tự do và lịch hẹn mới lặp theo tuần/tháng");
         }
-        return r;
+        return type == MomentType.MOMENT ? Recurrence.NONE : r;
     }
 
     private static UUID checkSubject(CoupleContext c, UUID subject) {
