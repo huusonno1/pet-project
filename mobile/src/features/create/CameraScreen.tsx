@@ -32,7 +32,7 @@ export default function CameraScreen() {
   const partner = couple.data?.partner;
 
   function start(uris: string[]) {
-    captureStore.reset({ uris, effect, hearts: effect === 'HEARTS', date: toIsoDate(new Date()) });
+    captureStore.reset({ uris, effect, hearts: effect === 'HEARTS', date: captureStore.get().date || toIsoDate(new Date()) });
     router.push('/create/preview');
   }
 
@@ -47,7 +47,7 @@ export default function CameraScreen() {
   }
 
   function noPhoto() {
-    captureStore.reset({ date: toIsoDate(new Date()) });
+    captureStore.reset({ date: captureStore.get().date || toIsoDate(new Date()) });
     setClassifyOpen(true);
   }
 
