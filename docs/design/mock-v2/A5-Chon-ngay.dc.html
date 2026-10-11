@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Popup chọn ngày bắt đầu yêu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FFF8F3; font-family: 'Be Vietnam Pro', sans-serif; color: #2B1A2E;">
+  <dc-import name="A4-Ghep-doi-Nhap-ma" hint-size="390px,844px"></dc-import>
+  <a href="A4-Ghep-doi-Nhap-ma.dc.html" aria-label="Đóng lịch" style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; background: rgba(43,26,46,0.45);"></a>
+  <div style="position: absolute; left: 0; bottom: 0; width: 390px;">
+    <dc-import name="DatePicker" title="Ngày hai bạn bắt đầu yêu" mode="date" month-label="Tháng 2, 2025" offset="{{offset}}" days="{{days}}" selected="{{selected}}" confirm-href="A6-Thanh-cong.dc.html" cancel-href="A4-Ghep-doi-Nhap-ma.dc.html" hint-size="390px,560px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() { return { offset: 5, days: 28, selected: 14 }; }
+}
+</script>
+</body>
+</html>

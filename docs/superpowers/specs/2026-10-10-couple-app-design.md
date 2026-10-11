@@ -1,8 +1,8 @@
 # Couple App — Tài liệu thiết kế & yêu cầu tính năng
 
 - **Ngày tạo:** 2026-10-10
-- **Trạng thái:** Draft — chờ review
-- **Tài liệu sống:** các yêu cầu có thể thêm/sửa/bớt; mỗi thay đổi lớn ghi vào mục [Lịch sử thay đổi](#12-lịch-sử-thay-đổi).
+- **Trạng thái:** GĐ1 đã xong; UI v2 đang triển khai (§12)
+- **Tài liệu sống:** các yêu cầu có thể thêm/sửa/bớt; mỗi thay đổi lớn ghi vào mục [Lịch sử thay đổi](#13-lịch-sử-thay-đổi).
 
 ---
 
@@ -156,7 +156,7 @@ Ghi chú về cơ thể và sở thích của mỗi người để chọn quà d
 - Gợi ý quán ăn, địa điểm chơi.
 - Gợi ý lịch trình & ước tính chi phí du lịch.
 - Xác thực VNeID.
-- Đăng nhập Google / Apple (lưu ý: nếu có Google Sign-In thì App Store bắt buộc có Sign in with Apple).
+- Đăng nhập Google / Facebook / Apple **phía backend** (lưu ý: nếu có Google/Facebook Sign-In thì App Store bắt buộc có Sign in with Apple). Từ UI v2, app **đã có nút** cho cả 3 nhưng bấm vào chỉ báo "Sắp ra mắt" (xem §12.1).
 
 ## 5. Kiến trúc
 
@@ -579,7 +579,56 @@ Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) tr�
 - MinIO đã ngừng phát hành Docker image/binary bản community (cuối 2025): image `minio/minio` đã bị gỡ khỏi Docker Hub, dev/test dùng `bitnamilegacy/minio` (không còn cập nhật); khi lên production chọn AWS S3 hoặc S3-compatible khác (Cloudflare R2, SeaweedFS, Garage) — code không đổi vì dùng S3 API.
 - Spring Boot 3.5 hết hỗ trợ OSS từ 06/2026: nâng lên Spring Boot 4.x là một task riêng sau GĐ1.
 
-## 12. Lịch sử thay đổi
+## 12. UI v2 & bổ sung tính năng (2026-10-11)
+
+Giao diện v2 đã chốt theo mock `docs/design/mock-v2/` (bản sống: canvas "Couple App · Mock v2"). Mục này ghi các quyết định **ghi đè** những chỗ tương ứng ở §4–§8.
+
+### 12.1 Điều hướng & tài khoản
+
+- Tab bar: **Trang chủ · Nhật ký · [+] · Người ấy · Tôi**. Chu kỳ không nằm ở tab bar; là tính năng tuỳ chọn trong **Tôi → Theo dõi chu kỳ** (mặc định tắt).
+- Màn chào mừng → Đăng ký / Đăng nhập. Có nút **Tiếp tục với Apple / Google / Facebook** nhưng **chưa có backend**: bấm vào hiện thông báo "Sắp ra mắt", đăng nhập thật vẫn bằng email + mật khẩu.
+- Mọi ô chọn ngày dùng chung **popup lịch của app** (không dùng picker hệ thống).
+- Trang "Người ấy" chỉ hiển thị thông tin **của người kia**. Thông tin của mình (tên, sinh nhật, ảnh, size, món thích) sửa ở **Tôi → Thông tin cá nhân**.
+
+### 12.2 Dùng một mình & ghép đôi
+
+- **Ghép đôi không bắt buộc**: sau đăng ký, màn ghép đôi có nút "Để sau". Người dùng chưa ghép đôi (hoặc đã kết thúc cặp đôi) vẫn dùng được: Nhật ký & Khoảnh khắc riêng, nhắc nhở `CUSTOM` cho chính mình, theo dõi chu kỳ.
+- **Kỷ niệm riêng** (`moments.couple_id IS NULL`): chỉ người tạo xem/sửa; chỉ cho loại `MOMENT` và `CUSTOM`; không gắn địa điểm (`places` thuộc cặp đôi); người nhận nhắc luôn là chính người tạo. Khi ghép đôi, kỷ niệm riêng **vẫn riêng tư** (chia sẻ từng kỷ niệm sang cặp đôi: làm sau). Ảnh của kỷ niệm riêng là `media.couple_id IS NULL`, key `users/{userId}/moments/{yyyy}/{mm}/{uuid}.jpg`.
+- **ID người dùng** (`users.handle`): duy nhất (không phân biệt hoa thường), dạng `^[a-z0-9._]{3,30}$`, tự sinh khi đăng ký (`<tên không dấu><4 số>`), sửa được qua `PATCH /api/me`. Trùng → `409 HANDLE_TAKEN`.
+- **Tìm theo ID**: chỉ khớp **chính xác** ID, chỉ trả người có `user_settings.discoverable = true` (mặc định bật, tắt ở Quyền riêng tư), không trả chính mình. Giới hạn 30 lần tra / 15 phút (`ratelimit:lookup:{userId}`).
+- **Lời mời ghép đôi theo ID** (`pair_requests`): hết hạn sau 24 giờ; chỉ gửi/nhận khi cả hai chưa có cặp ACTIVE; người nhận Đồng ý (kèm ngày bắt đầu yêu tuỳ chọn) / Từ chối; người gửi huỷ được. Khi một trong hai người ghép đôi (bằng bất kỳ cách nào), các lời mời đang chờ liên quan bị huỷ. Push cho người nhận khi có lời mời, cho người gửi khi được đồng ý.
+
+### 12.3 Kỷ niệm
+
+- Loại mới **`MOMENT` — "Khoảnh khắc"**: lưu nhanh vào Nhật ký, **không có nhắc nhở và không lặp**. `details.mood` ∈ `MISSING` (Nhớ nhung), `HAPPY` (Hạnh phúc), `PEACEFUL` (Bình yên), `GRATEFUL` (Biết ơn), `SAD` (Buồn một chút), `OTHER`. Nhiều ảnh (đã hỗ trợ tối đa 30). Có thể không có ảnh (khoảnh khắc chỉ chữ). Khi tạo có cờ `notifyPartner` → push cho người ấy "💗 Lan vừa lưu một khoảnh khắc nhớ nhung".
+- `recurrence` mở rộng: `NONE · WEEKLY · MONTHLY · YEARLY`. `WEEKLY` lặp đúng thứ của `occurs_on`; `MONTHLY` lặp đúng ngày của tháng, tháng thiếu ngày thì lùi về ngày cuối tháng (31 → 30/28). Áp dụng cho `CUSTOM` và `DATE_PLAN`; `GIFT_OCCASION` luôn `YEARLY`; `ANNIVERSARY` dùng mốc ngày + năm tròn như cũ (lựa chọn "Theo mốc ngày yêu" trên UI = `ANNIVERSARY`).
+- Nhật ký gom kỷ niệm **theo ngày**; xem chi tiết một ngày bằng cách vuốt qua từng kỷ niệm, chạm trái/phải trên ảnh để xem từng ảnh.
+
+### 12.4 Lời nhắn (kéo từ GĐ2 lên)
+
+- Bảng `love_notes` như §6.7. `POST /api/love-notes {kind: TEXT|DRAWING, text?, drawingMediaId?}` (text ≤ 500 ký tự; `DRAWING` cần ảnh READY của cặp đôi) → push cho người ấy, deep link `coupleapp://notes`.
+- `GET /api/love-notes?before=<ISO>&limit=<≤50>` (mới nhất trước), `POST /api/love-notes/{id}/seen` (chỉ người nhận), `GET /api/love-notes/latest` (lời nhắn mới nhất **từ người ấy**, `204` nếu chưa có).
+- Trang chủ hiện lời nhắn mới nhất của người ấy và ô soạn nhanh ở cuối trang.
+
+### 12.5 Hộp thông báo
+
+- Bảng `notifications(id, user_id, kind, title, body, deep_link, read_at, created_at)`: mỗi push đã gửi thành công (nhắc nhở, ghép đôi, lời nhắn, lời mời, khoảnh khắc) được ghi một dòng cho người nhận — kể cả khi người đó chưa có thiết bị nào.
+- `GET /api/notifications?limit=<≤100>`, `GET /api/notifications/unread-count`, `POST /api/notifications/{id}/read`, `POST /api/notifications/read-all`.
+
+### 12.6 Chu kỳ & quyền riêng tư
+
+- `user_settings.cycle_tracking` (mặc định `false`; người đã có `cycle_logs` khi nâng cấp được bật sẵn). Tắt → không ghi kỳ mới được (`400`), huỷ kỷ niệm `CYCLE` và nhắc nhở, đối phương không thấy gì; dữ liệu cũ giữ lại. Bật lại → tính lại dự đoán.
+- Đối phương chỉ thấy dự đoán khi chủ thể **bật theo dõi và bật chia sẻ**.
+- `GET /api/couples/me` trả thêm của người ấy: `handle`, `birthday`, `avatarUrl`.
+- Cài đặt thêm `discoverable` (cho phép tìm theo ID) và `cycleTracking`.
+- Món yêu thích có thể kèm **một ảnh** (`preferences.image_media_id`, ảnh của cặp đôi hoặc ảnh riêng của người tạo). Giá tham khảo vẫn lưu ở backend nhưng **UI v2 không hiển thị và không nhập giá**. Mục "Sở thích khác" trên UI = các sở thích danh mục `HOBBY` chỉ có tên.
+
+### 12.7 Camera & hiệu ứng
+
+- Camera sáng màu, giữ tab bar; chụp hoặc chọn từ thư viện; nút "Không ảnh" để tạo kỷ niệm chỉ chữ.
+- Hiệu ứng áp **lên ảnh đã chụp** bằng Skia: `Gốc`, `Mịn da` (làm mềm + sáng), `Film` (ma trận màu), `Tim bay` / `Lấp lánh` (vẽ hình trang trí), `Tai thỏ` (sticker đặt cố định ở nửa trên ảnh — **chưa nhận diện khuôn mặt**), `Tem ngày`, `Thêm chữ`. Nhận diện khuôn mặt (AR thật) để sau: cần VisionCamera + ML Kit trong development build.
+
+## 13. Lịch sử thay đổi
 
 | Ngày | Thay đổi |
 |---|---|
@@ -588,3 +637,4 @@ Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) tr�
 | 2026-10-10 | Người nhận nhắc chọn được cho mọi loại kỷ niệm (mình/đối phương/cả hai); ghi chú FK & index. |
 | 2026-10-10 | Mã mời chuyển sang lưu Redis (TTL 1 giờ), thêm rate limit nhập mã; bỏ bảng `invite_codes`. |
 | 2026-10-10 | Đồng bộ khi lập kế hoạch GĐ1: email unique theo lower(email); `cycle_length_default`; PK `moment_media` theo position; `recipients` OWNER/PARTNER/BOTH; địa điểm GĐ1 tạo kèm kỷ niệm; bổ sung endpoint settings/reminders/catalog/default-length. |
+| 2026-10-11 | UI v2 theo mock đã chốt (§12): tab bar mới, chu kỳ tuỳ chọn, dùng một mình & ghép đôi theo ID, loại `MOMENT`, lặp tuần/tháng, lời nhắn và hộp thông báo kéo lên trước, nút đăng nhập mạng xã hội (chỉ UI). |

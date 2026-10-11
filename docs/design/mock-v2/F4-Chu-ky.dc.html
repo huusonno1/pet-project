@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Theo dõi chu kỳ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FFF8F3; font-family: 'Be Vietnam Pro', sans-serif; color: #2B1A2E;">
+  <div style="position: absolute; left: 24px; top: 52px; width: 342px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="F1-Toi.dc.html" aria-label="Quay lại" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 4px 12px rgba(43,26,46,0.08); display: flex; align-items: center; justify-content: center; color: #2B1A2E;"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700;">Theo dõi chu kỳ</h1>
+    </div>
+
+    <div style="padding: 16px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 8px 24px rgba(43,26,46,0.06); display: flex; align-items: center; gap: 12px;">
+      <span style="width: 40px; height: 40px; border-radius: 20px; background: #FFE6EC; color: #D64545; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.7s6 6.4 6 11a6 6 0 0 1-12 0c0-4.6 6-11 6-11z"></path></svg></span>
+      <span style="display: flex; flex-direction: column; flex-grow: 1;"><span id="track-label" style="font-size: 15px; font-weight: 700;">Bật theo dõi chu kỳ</span><span style="font-size: 13px; color: #6F5B6A;">Mặc định tắt. Chỉ dành cho ai cần.</span></span>
+      <button type="button" role="switch" aria-checked="{{trackStr}}" aria-labelledby="track-label" onClick="{{toggleTrack}}" style="{{trackTrack}}"><span aria-hidden="true" style="{{trackKnob}}"></span></button>
+    </div>
+
+    <sc-if value="{{tracking}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="padding: 20px 16px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 8px 24px rgba(43,26,46,0.06); display: flex; flex-direction: column; align-items: center; gap: 8px;">
+          <div style="position: relative; width: 170px; height: 170px;">
+            <svg aria-hidden="true" width="170" height="170" viewBox="0 0 170 170" style="position: absolute; left: 0; top: 0;">
+              <circle cx="85" cy="85" r="78" fill="none" stroke="#FFE6EC" stroke-width="14"></circle>
+              <circle cx="85" cy="85" r="78" fill="none" stroke="#E9557A" stroke-width="14" stroke-linecap="round" stroke-dasharray="315 490" transform="rotate(-90 85 85)"></circle>
+            </svg>
+            <span style="position: absolute; left: 0; top: 0; width: 170px; height: 170px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+              <span style="font-size: 48px; font-weight: 800; line-height: 1; color: #D64545;">10</span>
+              <span style="font-size: 13px; color: #6F5B6A;">ngày nữa</span>
+            </span>
+          </div>
+          <span style="font-size: 13px; color: #6F5B6A;">Dự kiến bắt đầu 21/10 · chu kỳ 28 ngày</span>
+        </div>
+
+        <button type="button" style="font: inherit; height: 54px; border-radius: 18px; border: 0; background: #C9365C; color: #FFFFFF; font-size: 16px; font-weight: 700; cursor: pointer;">Ghi nhận ngày bắt đầu</button>
+
+        <div style="padding: 16px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 8px 24px rgba(43,26,46,0.06); display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="width: 36px; height: 36px; border-radius: 18px; background: #FFE6EC; color: #E9557A; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"></path></svg></span>
+            <span style="display: flex; flex-direction: column; flex-grow: 1;"><span id="share-label" style="font-size: 15px; font-weight: 700;">Chia sẻ với Minh</span><span style="font-size: 13px; color: #6F5B6A;">Minh sẽ thấy thẻ nhắc ở tab “Người ấy” và được nhắc trước 2 ngày</span></span>
+            <button type="button" role="switch" aria-checked="{{shareStr}}" aria-labelledby="share-label" onClick="{{toggleShare}}" style="{{shareTrack}}"><span aria-hidden="true" style="{{shareKnob}}"></span></button>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px; background: #F6EEEA;">
+            <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6F5B6A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span style="font-size: 13px; color: #6F5B6A;">{{sharePreview}}</span>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{notTracking}}" hint-placeholder-val="{{false}}">
+      <p style="margin: 0; padding: 20px; border-radius: 24px; border: 1.5px dashed #EADFD9; text-align: center; font-size: 15px; line-height: 1.5; color: #6F5B6A;">Tính năng đang tắt. Không có dữ liệu nào được lưu và Minh không thấy gì về chu kỳ của bạn.</p>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tracking: true, share: true };
+  }
+  renderVals() {
+    const track = (on) => 'position: relative; width: 50px; height: 30px; border-radius: 15px; border: 0; padding: 0; cursor: pointer; flex-shrink: 0; background: ' + (on ? '#C9365C' : '#D9CCC6') + ';';
+    const knob = (on) => 'position: absolute; top: 4px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; left: ' + (on ? '24px' : '4px') + ';';
+    const t = this.state.tracking, s = this.state.share;
+    return {
+      tracking: t,
+      notTracking: !t,
+      trackStr: t ? 'true' : 'false',
+      toggleTrack: () => this.setState({ tracking: !t }),
+      trackTrack: track(t), trackKnob: knob(t),
+      shareStr: s ? 'true' : 'false',
+      toggleShare: () => this.setState({ share: !s }),
+      shareTrack: track(s), shareKnob: knob(s),
+      sharePreview: s ? 'Minh thấy: “Khoảng 10 ngày nữa là tới ngày của Lan”' : 'Đang không chia sẻ — chỉ mình bạn thấy',
+    };
+  }
+}
+</script>
+</body>
+</html>

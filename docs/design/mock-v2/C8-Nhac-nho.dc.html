@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Tuỳ chỉnh nhắc nhở</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FFF8F3; font-family: 'Be Vietnam Pro', sans-serif; color: #2B1A2E;">
+  <div style="position: absolute; left: 20px; top: 52px; width: 350px; display: flex; align-items: center; justify-content: space-between;">
+    <a href="C7-Chi-tiet.dc.html" aria-label="Quay lại" style="width: 44px; height: 44px; box-sizing: border-box; border-radius: 22px; border: 1px solid #EADFD9; background: #FFFFFF; color: #2B1A2E; display: flex; align-items: center; justify-content: center;"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></a>
+    <h1 style="margin: 0; font-size: 18px; font-weight: 700;">Nhắc nhở</h1>
+    <a href="C7-Chi-tiet.dc.html" style="font-size: 15px; font-weight: 700; color: #C9365C; text-decoration: none; padding: 10px 4px;">Lưu</a>
+  </div>
+
+  <div style="position: absolute; left: 24px; top: 112px; width: 342px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="padding: 12px 16px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 8px 24px rgba(43,26,46,0.06); display: flex; align-items: center; gap: 12px;">
+      <span aria-hidden="true" style="width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(140deg, #FFC8B4, #F38BA8); flex-shrink: 0;"></span>
+      <span style="display: flex; flex-direction: column;"><span style="font-size: 15px; font-weight: 700;">Valentine đầu tiên</span><span style="font-size: 13px; color: #6F5B6A;">Kỷ niệm · lặp hằng năm</span></span>
+    </div>
+
+    <p style="margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #6F5B6A;">AI SẼ NHẬN NHẮC?</p>
+    <div role="radiogroup" aria-label="Người nhận" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;">
+      <sc-for list="{{who}}" as="w" hint-placeholder-count="3">
+        <button type="button" role="radio" aria-checked="{{w.checked}}" onClick="{{w.pick}}" style="{{w.style}}">
+          <span aria-hidden="true" style="display: flex;">
+            <sc-if value="{{w.me}}" hint-placeholder-val="{{true}}"><span style="width: 28px; height: 28px; border-radius: 14px; background: #FFE6EC; color: #C9365C; border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">L</span></sc-if>
+            <sc-if value="{{w.partner}}" hint-placeholder-val="{{true}}"><span style="margin-left: -8px; width: 28px; height: 28px; border-radius: 14px; background: #EEEAFF; color: #5B4BC4; border: 2px solid #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">M</span></sc-if>
+          </span>
+          <span style="{{w.labelStyle}}">{{w.label}}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; justify-content: space-between;">
+      <p style="margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #6F5B6A;">NHẮC TRƯỚC</p>
+      <p style="margin: 0; font-size: 11px; font-weight: 700; color: #C9365C;">{{countLabel}}</p>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      <sc-for list="{{offsets}}" as="o" hint-placeholder-count="6">
+        <button type="button" aria-pressed="{{o.pressed}}" onClick="{{o.toggle}}" style="{{o.style}}">{{o.label}}</button>
+      </sc-for>
+    </div>
+
+    <a href="C6-Ngay-gio.dc.html" style="padding: 12px 16px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 8px 24px rgba(43,26,46,0.06); display: flex; align-items: center; gap: 12px; color: #2B1A2E; text-decoration: none;">
+      <span style="width: 36px; height: 36px; border-radius: 18px; background: #FFEEDF; color: #B5562A; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+      <span style="display: flex; flex-direction: column; flex-grow: 1;"><span style="font-size: 15px; font-weight: 700;">Giờ gửi</span><span style="font-size: 13px; color: #6F5B6A;">Mở popup lịch (chế độ giờ)</span></span>
+      <span style="font-size: 15px; font-weight: 700; color: #C9365C;">08:00</span>
+    </a>
+
+    <p style="margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #6F5B6A;">XEM TRƯỚC THÔNG BÁO</p>
+    <div style="padding: 12px 14px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 10px 28px rgba(43,26,46,0.12); display: flex; align-items: center; gap: 12px;">
+      <span style="width: 40px; height: 40px; border-radius: 20px; background: #C9365C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"></path></svg></span>
+      <span style="display: flex; flex-direction: column;"><span style="font-size: 15px; font-weight: 700;">Valentine sắp tới</span><span style="font-size: 13px; color: #6F5B6A;">{{preview}}</span></span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { who: 'both', offs: { 'Đúng ngày': true, 'Trước 1 ngày': false, 'Trước 3 ngày': true, 'Trước 7 ngày': false, 'Trước 2 giờ': false } };
+  }
+  renderVals() {
+    const who = [['me', 'Mình'], ['partner', 'Người ấy'], ['both', 'Cả hai']].map(([k, label]) => {
+      const on = this.state.who === k;
+      return {
+        label,
+        me: k !== 'partner',
+        partner: k !== 'me',
+        checked: on ? 'true' : 'false',
+        pick: () => this.setState({ who: k }),
+        style: 'font: inherit; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 0; border-radius: 24px; cursor: pointer; ' +
+          (on ? 'background: #FFE6EC; border: 2px solid #E9557A;' : 'background: #FFFFFF; border: 2px solid transparent; box-shadow: 0 8px 24px rgba(43,26,46,0.06);'),
+        labelStyle: 'font-size: 13px; font-weight: 600; color: ' + (on ? '#C9365C' : '#2B1A2E') + ';',
+      };
+    });
+    const offs = this.state.offs;
+    const offsets = Object.keys(offs).map((label) => ({
+      label,
+      pressed: offs[label] ? 'true' : 'false',
+      toggle: () => this.setState({ offs: { ...offs, [label]: !offs[label] } }),
+      style: 'font: inherit; height: 36px; padding: 0 14px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600; ' +
+        (offs[label] ? 'border: 1.5px solid #C9365C; background: #C9365C; color: #FFFFFF;' : 'border: 1.5px solid #EADFD9; background: #FFFFFF; color: #2B1A2E;'),
+    }));
+    offsets.push({ label: '+ Tuỳ chỉnh', pressed: 'false', toggle: () => {}, style: 'font: inherit; height: 36px; padding: 0 14px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600; border: 1.5px dashed #E9557A; background: #FFFFFF; color: #C9365C;' });
+    const count = Object.values(offs).filter(Boolean).length;
+    const target = { me: 'Gửi cho Lan', partner: 'Gửi cho Minh', both: 'Gửi cho cả hai' }[this.state.who];
+    return {
+      who, offsets,
+      countLabel: count + '/5 đã chọn',
+      preview: 'Còn 3 ngày nữa là Valentine · ' + target,
+    };
+  }
+}
+</script>
+</body>
+</html>

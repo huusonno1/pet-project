@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Khoảnh khắc</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#C9365C;text-decoration:none}a:hover{color:#A82A4B}
+button,textarea{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FFF8F3; font-family: 'Be Vietnam Pro', sans-serif; color: #2B1A2E;">
+  <div style="box-sizing: border-box; width: 390px; padding: 56px 24px 0; display: flex; flex-direction: column; gap: 16px;">
+
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <a href="C3-Phan-loai.dc.html" aria-label="Quay lại" style="width: 44px; height: 44px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 4px 12px rgba(43,26,46,0.08); display: flex; align-items: center; justify-content: center; color: #2B1A2E;">
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
+      </a>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700; flex-grow: 1;">Khoảnh khắc</h1>
+      <span style="font-size: 12px; font-weight: 700; color: #24795A; background: #E3F5EC; border-radius: 999px; padding: 5px 10px;">Không nhắc nhở</span>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <div role="img" aria-label="Ảnh 1" style="width: 76px; height: 96px; border-radius: 18px; background: linear-gradient(140deg, #FFC8B4, #F38BA8);"></div>
+      <div role="img" aria-label="Ảnh 2" style="width: 76px; height: 96px; border-radius: 18px; background: linear-gradient(200deg, #FFE1A8, #FFAE8A);"></div>
+      <div role="img" aria-label="Ảnh 3" style="width: 76px; height: 96px; border-radius: 18px; background: linear-gradient(160deg, #C9D8FF, #A99BF0);"></div>
+      <button type="button" style="width: 76px; height: 96px; border-radius: 18px; background: #FFE6EC; border: 1.5px dashed #E9557A; color: #C9365C; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 13px; font-weight: 600; cursor: pointer;">
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+        Thêm
+      </button>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <label for="caption" style="font-size: 13px; color: #6F5B6A;">Bạn đang nghĩ gì?</label>
+      <textarea id="caption" rows="2" style="resize: none; box-sizing: border-box; width: 100%; padding: 12px 14px; border-radius: 16px; border: 1.5px solid #EADFD9; background: #FFFFFF; font-size: 15px; color: #2B1A2E; line-height: 1.45;">Đi ngang quán cà phê hồi mới quen, nhớ ghê…</textarea>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <p style="margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #6F5B6A;">CẢM XÚC</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <sc-for list="{{moods}}" as="m" hint-placeholder-count="6">
+          <button type="button" onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="{{m.style}}">{{m.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="background: #FFFFFF; border-radius: 22px; box-shadow: 0 8px 24px rgba(43,26,46,0.06); padding: 4px 16px; display: flex; flex-direction: column;">
+      <button type="button" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; background: none; border: 0; border-bottom: 1px solid #F3EAE5; color: #2B1A2E; cursor: pointer; text-align: left;">
+        <span style="width: 32px; height: 32px; border-radius: 16px; background: #F6EEEA; color: #6F5B6A; display: flex; align-items: center; justify-content: center;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+        <span style="flex-grow: 1; font-size: 15px;">Thời gian</span>
+        <span style="font-size: 15px; font-weight: 600;">Hôm nay, 14:20</span>
+      </button>
+      <button type="button" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; background: none; border: 0; color: #2B1A2E; cursor: pointer; text-align: left;">
+        <span style="width: 32px; height: 32px; border-radius: 16px; background: #F6EEEA; color: #6F5B6A; display: flex; align-items: center; justify-content: center;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+        <span style="flex-grow: 1; font-size: 15px;">Địa điểm</span>
+        <span style="font-size: 15px; font-weight: 600;">Cộng Cà Phê</span>
+      </button>
+    </div>
+
+    <div style="background: #FFFFFF; border-radius: 22px; box-shadow: 0 8px 24px rgba(43,26,46,0.06); padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+      <span style="width: 32px; height: 32px; border-radius: 16px; background: #FFE6EC; color: #E9557A; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"></path></svg></span>
+      <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+        <span id="notify-label" style="font-size: 15px; font-weight: 700;">Báo cho Minh biết</span>
+        <span style="font-size: 12px; color: #6F5B6A;">{{notifyPreview}}</span>
+      </span>
+      <button type="button" role="switch" aria-checked="{{notifyStr}}" aria-labelledby="notify-label" onClick="{{toggleNotify}}" style="{{trackStyle}}">
+        <span aria-hidden="true" style="{{knobStyle}}"></span>
+      </button>
+    </div>
+  </div>
+
+  <a href="D4-Chi-tiet-ngay.dc.html" style="position: absolute; left: 24px; bottom: 34px; width: 342px; height: 54px; border-radius: 18px; background: #C9365C; color: #FFFFFF; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center;">Lưu vào Nhật ký</a>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { mood: 'Nhớ nhung', notify: true };
+  }
+  renderVals() {
+    const labels = ['Nhớ nhung', 'Hạnh phúc', 'Bình yên', 'Biết ơn', 'Buồn một chút', '+ Khác'];
+    const base = 'height: 38px; padding: 0 14px; border-radius: 999px; font-size: 14px; font-weight: 600; cursor: pointer;';
+    const moods = labels.map((label) => {
+      const on = this.state.mood === label;
+      return {
+        label,
+        pressed: on ? 'true' : 'false',
+        style: base + (on ? ' background: #C9365C; color: #FFFFFF; border: 1.5px solid #C9365C;' : ' background: #FFFFFF; color: #2B1A2E; border: 1.5px solid #EADFD9;'),
+        pick: () => this.setState({ mood: label }),
+      };
+    });
+    const on = this.state.notify;
+    const moodText = this.state.mood === '+ Khác' ? 'mới' : this.state.mood.toLowerCase();
+    return {
+      moods,
+      notifyStr: on ? 'true' : 'false',
+      notifyPreview: on ? 'Minh nhận: “Lan vừa lưu một khoảnh khắc ' + moodText + '”' : 'Chỉ lưu vào Nhật ký, không gửi thông báo',
+      toggleNotify: () => this.setState({ notify: !on }),
+      trackStyle: 'position: relative; width: 50px; height: 30px; border-radius: 15px; border: 0; padding: 0; cursor: pointer; flex-shrink: 0; background: ' + (on ? '#C9365C' : '#D9CCC6') + ';',
+      knobStyle: 'position: absolute; top: 4px; width: 22px; height: 22px; border-radius: 11px; background: #FFFFFF; left: ' + (on ? '24px' : '4px') + ';',
+    };
+  }
+}
+</script>
+</body>
+</html>
