@@ -68,5 +68,11 @@ Mọi endpoint (trừ `/api/auth/**`) cần header `Authorization: Bearer <acces
 | Moment | `GET/POST /api/moments`, `GET/PATCH/DELETE /api/moments/{id}`, `PUT /api/moments/{id}/reminder-config`, `GET /api/moments/{id}/reminders` |
 | Cycle | `GET/POST /api/cycles/logs`, `DELETE /api/cycles/logs/{id}`, `GET /api/cycles/prediction?userId=`, `PUT /api/cycles/default-length` |
 | Trait | `GET /api/traits/catalog`, `GET /api/traits/{userId}`, `POST/PATCH/DELETE /api/traits/sizes[/{id}]`, `POST/PATCH/DELETE /api/traits/preferences[/{id}]` |
+| Users | `GET /api/users/lookup?handle=` |
+| Couple (lời mời theo ID) | `POST/GET /api/couples/requests`, `POST /api/couples/requests/{id}/accept`, `POST /api/couples/requests/{id}/decline`, `DELETE /api/couples/requests/{id}` |
+| Notifications | `GET /api/notifications`, `GET /api/notifications/unread-count`, `POST /api/notifications/{id}/read`, `POST /api/notifications/read-all` |
+| Love note | `GET/POST /api/love-notes`, `POST /api/love-notes/{id}/seen`, `GET /api/love-notes/latest` |
+
+Ghi chú UI v2: `PATCH /api/me` nhận `handle`; `GET/PUT /api/me/settings` có `discoverable`, `cycleTracking`; `POST /api/moments` nhận `type: MOMENT`, `recurrence: WEEKLY|MONTHLY`, `notifyPartner`; `MomentResponse.personal`.
 
 Chi tiết nghiệp vụ: `docs/superpowers/specs/2026-10-10-couple-app-design.md`.

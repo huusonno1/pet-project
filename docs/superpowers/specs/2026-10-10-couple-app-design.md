@@ -550,8 +550,13 @@ interface MomentTypeHandler {
 | Cycle | `GET/POST /api/cycles/logs`, `DELETE /api/cycles/logs/{id}`, `GET /api/cycles/prediction?userId=`, `PUT /api/cycles/default-length` |
 | Trait | `GET /api/traits/catalog` (danh sách loại size/danh mục gợi ý), `GET /api/traits/{userId}`, `POST/PATCH/DELETE /api/traits/sizes/{id}`, `POST/PATCH/DELETE /api/traits/preferences/{id}` (kèm links) |
 | Media | `POST /api/media/upload-url`, `POST /api/media/{id}/confirm`, `DELETE /api/media/{id}` |
+| Users | `GET /api/users/lookup?handle=` |
+| Couple (lời mời theo ID) | `POST/GET /api/couples/requests`, `POST /api/couples/requests/{id}/accept`, `POST /api/couples/requests/{id}/decline`, `DELETE /api/couples/requests/{id}` |
+| Notifications | `GET /api/notifications`, `GET /api/notifications/unread-count`, `POST /api/notifications/{id}/read`, `POST /api/notifications/read-all` |
 | Place (GĐ2) | `GET/POST /api/places`, `PATCH/DELETE /api/places/{id}`, `POST /api/places/{id}/visits`, `PATCH/DELETE /api/visits/{id}` |
 | Love note (GĐ2) | `GET/POST /api/love-notes`, `POST /api/love-notes/{id}/seen`, `GET /api/love-notes/latest` |
+
+Ghi chú UI v2: `PATCH /api/me` nhận `handle`; `GET/PUT /api/me/settings` có `discoverable`, `cycleTracking`; `POST /api/moments` nhận `type: MOMENT`, `recurrence: WEEKLY|MONTHLY`, `notifyPartner`; `MomentResponse.personal`.
 
 Các endpoint cần cặp đôi (moment, trait, place, love-note, distance) trả `409 COUPLE_REQUIRED` nếu user chưa ghép đôi.
 
