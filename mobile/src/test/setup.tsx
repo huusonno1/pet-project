@@ -122,3 +122,7 @@ jest.mock('@/features/create/EffectPreview', () => {
   return { EffectPreview: () => <View testID="effect-preview" /> };
 });
 jest.mock('@/features/create/render-effects', () => ({ renderComposition: jest.fn(async (uri: string) => `${uri}#fx`) }));
+jest.mock('@/ui/ProgressRing', () => {
+  const { Text, View } = require('react-native');
+  return { ProgressRing: ({ label, sub }: { label: string; sub: string }) => <View><Text>{label}</Text><Text>{sub}</Text></View> };
+});

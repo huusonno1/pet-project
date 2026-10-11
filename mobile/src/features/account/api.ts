@@ -4,7 +4,7 @@ import { apiFetch } from '@/lib/api/client';
 import type { Me, Settings } from '@/lib/api/types';
 import { keys } from '@/lib/query';
 
-export type UpdateMeInput = { displayName?: string; birthday?: string; timezone?: string; avatarMediaId?: string };
+export type UpdateMeInput = { displayName?: string; handle?: string; birthday?: string; timezone?: string; avatarMediaId?: string };
 
 export function useMe() {
   return useQuery({ queryKey: keys.me, queryFn: () => apiFetch<Me>('/api/me') });

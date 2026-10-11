@@ -1,1 +1,1 @@
-export { default } from '@/features/cycle/CycleScreen';
+export { default } from '@/features/me/CycleScreen';
