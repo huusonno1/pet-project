@@ -27,7 +27,7 @@ export default function MomentsScreen() {
 
   return (
     <Screen>
-      <Button title="+ Thêm kỷ niệm" onPress={() => router.push('/moments/new')} />
+      <Button title="+ Thêm kỷ niệm" onPress={() => router.push('/create')} />
       <Title>Sắp tới</Title>
       {upcoming.length === 0 && <Text style={styles.muted}>Chưa có gì sắp tới.</Text>}
       {upcoming.map(({ m, date }) => (

@@ -1,1 +1,5 @@
-export { default } from '@/features/moments/EditMomentScreen';
+import MilestoneFormScreen from '@/features/moments/MilestoneFormScreen';
+
+export default function EditMilestone() {
+  return <MilestoneFormScreen mode="edit" />;
+}
