@@ -98,7 +98,8 @@ public class ReminderScheduler {
     @Transactional
     public int replanAllRecurring() {
         List<Moment> recurring = moments.findRecurring(
-                EnumSet.of(MomentType.ANNIVERSARY, MomentType.GIFT_OCCASION, MomentType.CYCLE), Recurrence.YEARLY);
+                EnumSet.of(MomentType.ANNIVERSARY, MomentType.GIFT_OCCASION, MomentType.CYCLE),
+                EnumSet.of(Recurrence.WEEKLY, Recurrence.MONTHLY, Recurrence.YEARLY));
         recurring.forEach(this::replan);
         return recurring.size();
     }

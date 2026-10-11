@@ -2,7 +2,6 @@ package com.coupleapp.moment.handler;
 
 import com.coupleapp.moment.Moment;
 import com.coupleapp.moment.MomentType;
-import com.coupleapp.moment.Recurrence;
 import com.coupleapp.moment.reminder.Audience;
 import com.coupleapp.moment.reminder.Message;
 import com.coupleapp.moment.reminder.MomentTypeHandler;
@@ -31,9 +30,7 @@ public class CustomHandler implements MomentTypeHandler {
 
     @Override
     public List<Occurrence> occurrences(Moment m, ReminderConfig cfg, LocalDate from, LocalDate to) {
-        return m.getRecurrence() == Recurrence.YEARLY
-                ? Occurrences.yearly(m, from, to)
-                : Occurrences.single(m, from, to);
+        return Occurrences.recurring(m, from, to);
     }
 
     @Override

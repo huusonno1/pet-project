@@ -253,6 +253,26 @@ class MomentTest extends IntegrationTest {
     }
 
     @Test
+    void weeklyCustomMomentPlansRemindersEveryWeek() throws Exception {
+        String id = create(lan, Map.of("type", "CUSTOM", "title", "Gọi video tối thứ 6",
+                "occursOn", today().plusDays(1).toString(), "recurrence", "WEEKLY"));
+        put("/api/moments/" + id + "/reminder-config", lan, Map.of("offsets", List.of("P0D")))
+                .andExpect(status().isOk());
+        assertThat(reminders(lan, id).size()).isBetween(55, 60); // 400 ngày ≈ 57 tuần
+    }
+
+    @Test
+    void onlyCustomAndDatePlanMayRepeatWeeklyOrMonthly() throws Exception {
+        post("/api/moments", lan, Map.of("type", "ANNIVERSARY", "title", "Yêu",
+                "occursOn", today().minusDays(10).toString(), "recurrence", "MONTHLY"))
+                .andExpect(status().isBadRequest());
+        post("/api/moments", lan, Map.of("type", "GIFT_OCCASION", "title", "Sinh nhật",
+                "occursOn", today().plusDays(10).toString(), "recurrence", "WEEKLY",
+                "subjectUserId", minhId.toString(), "details", Map.of("occasion", "BIRTHDAY")))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void requiresCouple() throws Exception {
         String hoa = register("hoa@x.vn", "Hoa");
         get("/api/moments", hoa).andExpect(jsonPath("$.code").value("COUPLE_REQUIRED"));

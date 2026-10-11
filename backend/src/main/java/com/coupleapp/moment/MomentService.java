@@ -54,8 +54,7 @@ public class MomentService {
         m.setTitle(r.title().trim());
         m.setOccursOn(r.occursOn());
         m.setOccursAt(r.occursAt());
-        m.setRecurrence(r.recurrence() != null ? r.recurrence()
-                : r.type() == MomentType.GIFT_OCCASION ? Recurrence.YEARLY : Recurrence.NONE);
+        m.setRecurrence(normalizeRecurrence(r.type(), r.recurrence()));
         m.setSubjectUserId(checkSubject(c, r.subjectUserId()));
         m.setMessage(r.message());
         m.setDetails(r.details() != null ? new HashMap<>(r.details()) : new HashMap<>());
@@ -97,7 +96,7 @@ public class MomentService {
         if (r.title() != null) m.setTitle(r.title().trim());
         if (r.occursOn() != null) m.setOccursOn(r.occursOn());
         if (r.occursAt() != null) m.setOccursAt(r.occursAt());
-        if (r.recurrence() != null) m.setRecurrence(r.recurrence());
+        if (r.recurrence() != null) m.setRecurrence(normalizeRecurrence(m.getType(), r.recurrence()));
         if (r.subjectUserId() != null) m.setSubjectUserId(checkSubject(c, r.subjectUserId()));
         if (r.message() != null) m.setMessage(r.message());
         if (r.details() != null) m.setDetails(new HashMap<>(r.details()));
@@ -175,6 +174,17 @@ public class MomentService {
             return true;
         }
         return settings.findById(m.getSubjectUserId()).map(UserSettings::isShareCycle).orElse(true);
+    }
+
+    /** WEEKLY/MONTHLY chỉ cho CUSTOM và DATE_PLAN; GIFT_OCCASION mặc định YEARLY. */
+    static Recurrence normalizeRecurrence(MomentType type, Recurrence requested) {
+        Recurrence r = requested != null ? requested
+                : type == MomentType.GIFT_OCCASION ? Recurrence.YEARLY : Recurrence.NONE;
+        boolean repeating = r == Recurrence.WEEKLY || r == Recurrence.MONTHLY;
+        if (repeating && type != MomentType.CUSTOM && type != MomentType.DATE_PLAN) {
+            throw new ApiException(ErrorCode.VALIDATION_FAILED, "Chỉ kỷ niệm tự do và lịch hẹn mới lặp theo tuần/tháng");
+        }
+        return r;
     }
 
     private static UUID checkSubject(CoupleContext c, UUID subject) {
