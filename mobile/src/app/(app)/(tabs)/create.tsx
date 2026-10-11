@@ -1,1 +1,1 @@
-export { default } from '@/features/moments/NewMomentScreen';
+export { default } from '@/features/create/CameraScreen';

@@ -106,3 +106,18 @@ jest.mock('@/features/notes/DrawPad', () => {
   };
 });
 jest.mock('@/features/notes/export-drawing', () => ({ exportDrawing: jest.fn(async () => 'file:///drawing.png') }));
+
+jest.mock('expo-camera', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const CameraView = React.forwardRef((props: object, ref: React.Ref<unknown>) => {
+    React.useImperativeHandle(ref, () => ({ takePictureAsync: jest.fn(async () => ({ uri: 'file:///shot.jpg', width: 1000, height: 1000 })) }));
+    return <View testID="camera" {...props} />;
+  });
+  return { CameraView, useCameraPermissions: () => [{ granted: true, canAskAgain: true }, jest.fn()] };
+});
+jest.mock('@/features/create/EffectPreview', () => {
+  const { View } = require('react-native');
+  return { EffectPreview: () => <View testID="effect-preview" /> };
+});
+jest.mock('@/features/create/render-effects', () => ({ renderComposition: jest.fn(async (uri: string) => `${uri}#fx`) }));
