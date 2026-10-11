@@ -4,6 +4,7 @@ export type Me = {
   id: string;
   email: string;
   displayName: string;
+  handle: string;
   birthday: string | null;
   timezone: string;
   avatarUrl: string | null;
@@ -14,9 +15,11 @@ export type Settings = {
   shareCycle: boolean;
   cycleLengthDefault: number;
   notifyPrefs: Record<string, boolean>;
+  discoverable: boolean;
+  cycleTracking: boolean;
 };
 
-export type Partner = { id: string; displayName: string };
+export type Partner = { id: string; displayName: string; handle: string; birthday: string | null; avatarUrl: string | null };
 export type Couple = { id: string; startedDatingOn: string | null; createdAt: string; partner: Partner };
 export type Invite = { code: string; expiresAt: string };
 
@@ -26,8 +29,8 @@ export type Distance = {
   partner: { updatedAt: string } | null;
 };
 
-export type MomentType = 'ANNIVERSARY' | 'DATE_PLAN' | 'GIFT_OCCASION' | 'CYCLE' | 'CUSTOM';
-export type Recurrence = 'NONE' | 'YEARLY';
+export type MomentType = 'ANNIVERSARY' | 'DATE_PLAN' | 'GIFT_OCCASION' | 'CYCLE' | 'CUSTOM' | 'MOMENT';
+export type Recurrence = 'NONE' | 'WEEKLY' | 'MONTHLY' | 'YEARLY';
 export type Audience = 'OWNER' | 'PARTNER' | 'BOTH';
 
 export type ReminderConfig = {
@@ -57,6 +60,7 @@ export type Moment = {
   occursOn: string;
   occursAt: string | null;
   recurrence: Recurrence;
+  personal: boolean;
   subjectUserId: string | null;
   message: string | null;
   details: Record<string, unknown>;
@@ -80,6 +84,7 @@ export type MomentInput = {
   details?: Record<string, unknown>;
   place?: PlaceInput;
   mediaIds?: string[];
+  notifyPartner?: boolean;
 };
 
 export type ReminderItem = { id: string; fireAt: string; title: string; body: string; deepLink: string | null };
@@ -114,6 +119,7 @@ export type Preference = {
   createdBy: string;
   updatedAt: string;
   links: LinkDto[];
+  image: MediaDto | null;
 };
 
 export type Traits = { sizes: SizeEntry[]; preferences: Preference[] };
@@ -127,3 +133,27 @@ export type UploadUrl = {
   headers: Record<string, string>;
   expiresAt: string;
 };
+
+export type LoveNote = {
+  id: string;
+  authorId: string;
+  kind: 'TEXT' | 'DRAWING';
+  text: string | null;
+  drawing: MediaDto | null;
+  seenAt: string | null;
+  createdAt: string;
+};
+
+export type InboxItem = {
+  id: string;
+  kind: 'REMINDER' | 'PAIRED' | 'LOVE_NOTE' | 'PAIR_REQUEST' | 'MOMENT' | string;
+  title: string;
+  body: string;
+  deepLink: string | null;
+  readAt: string | null;
+  createdAt: string;
+};
+
+export type UserCard = { id: string; displayName: string; handle: string; avatarUrl: string | null };
+export type PairRequest = { id: string; user: UserCard; createdAt: string; expiresAt: string };
+export type PairRequests = { incoming: PairRequest[]; outgoing: PairRequest[] };

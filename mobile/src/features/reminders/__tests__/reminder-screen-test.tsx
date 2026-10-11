@@ -16,6 +16,7 @@ function moment(partial: Partial<Moment> = {}): Moment {
     occursOn: '2027-01-01',
     occursAt: null,
     recurrence: 'NONE',
+    personal: false,
     subjectUserId: null,
     message: null,
     details: {},
