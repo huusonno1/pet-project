@@ -1,1 +1,1 @@
-export { default } from '@/features/traits/TraitsScreen';
+export { default } from '@/features/partner/PartnerScreen';
