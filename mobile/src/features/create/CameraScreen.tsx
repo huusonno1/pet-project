@@ -107,7 +107,7 @@ export default function CameraScreen() {
           const on = e.id === effect;
           return (
             <Pressable key={e.id} accessibilityRole="radio" accessibilityLabel={e.label} accessibilityState={{ checked: on }} onPress={() => setEffect(e.id)} style={{ alignItems: 'center', gap: 4 }}>
-              <LinearGradient colors={e.colors} style={[styles.effect, on && { borderWidth: 3, borderColor: colors.roseStrong }]}>
+              <LinearGradient colors={e.colors} style={[styles.effect, { borderWidth: 3, borderColor: on ? colors.roseStrong : 'transparent' }]}>
                 <Icon name={e.icon} size={22} color={e.id === 'ORIGINAL' ? colors.textMuted : colors.white} />
               </LinearGradient>
               <AppText variant="micro" color={on ? colors.roseStrong : colors.textMuted} style={{ letterSpacing: 0 }}>{e.label}</AppText>
