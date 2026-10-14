@@ -3,6 +3,11 @@
 App cho các cặp đôi: kỷ niệm, nhắc nhở, đặc điểm của nhau, khoảng cách yêu xa.
 Thiết kế: `docs/superpowers/specs/2026-10-10-couple-app-design.md`.
 
+## Quy tắc Git
+
+Git Flow + Conventional Commits, bắt buộc cho cả người và AI: **`docs/GIT_FLOW.md`**.
+Sau khi clone, bật hook kiểm tra: `git config core.hooksPath .githooks`.
+
 ## Cấu trúc
 
 - `backend/` — Spring Boot 3.5 (Java 21)
