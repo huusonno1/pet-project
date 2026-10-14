@@ -8,7 +8,7 @@ const FEATHER = {
   gift: 'gift', droplet: 'droplet', lock: 'lock', link: 'link', user: 'user', search: 'search', share: 'share-2',
   copy: 'copy', edit: 'edit-2', close: 'x', back: 'chevron-left', chevronRight: 'chevron-right',
   chevronDown: 'chevron-down', plus: 'plus', repeat: 'repeat', clock: 'clock', send: 'send', zap: 'zap',
-  flip: 'refresh-cw', eye: 'eye', shield: 'shield', logout: 'log-out', layers: 'layers', journal: 'book-open',
+  flip: 'refresh-cw', eye: 'eye', eyeOff: 'eye-off', shield: 'shield', logout: 'log-out', layers: 'layers', journal: 'book-open',
   home: 'home', hash: 'hash', navigation: 'navigation', check: 'check', more: 'more-horizontal', type: 'type',
   film: 'film', smile: 'smile', trash: 'trash-2', slash: 'slash', pen: 'edit-3', quote: 'message-circle',
 } as const;

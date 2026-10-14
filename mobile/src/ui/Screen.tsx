@@ -1,4 +1,5 @@
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors } from './theme';
@@ -9,9 +10,14 @@ export function Screen({ children, scroll = true, padded = true, bottomPad = 24,
   const insets = useSafeAreaInsets();
   const content = { paddingTop: insets.top + 8, paddingHorizontal: padded ? 24 : 0, paddingBottom: bottomPad, gap };
   return scroll ? (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.bg }} contentContainerStyle={content} keyboardShouldPersistTaps="handled">
+    // Bàn phím mở → tự cuộn ô đang nhập lên trên bàn phím để người dùng thấy mình gõ gì.
+    <KeyboardAwareScrollView
+      style={{ flex: 1, backgroundColor: colors.bg }}
+      contentContainerStyle={content}
+      keyboardShouldPersistTaps="handled"
+      bottomOffset={24}>
       {children}
-    </ScrollView>
+    </KeyboardAwareScrollView>
   ) : (
     <View style={[{ flex: 1, backgroundColor: colors.bg }, content]}>{children}</View>
   );
