@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Chặn push thẳng lên main/develop và nhánh sai tên — xem docs/GIT_FLOW.md.
+# Chỉ người duy trì repo mới đặt ALLOW_PROTECTED_PUSH=1 (VD tạo develop lần đầu, đẩy tag phát hành).
+while read -r _local_ref _local_sha remote_ref _remote_sha; do
+  case "$remote_ref" in refs/heads/*) ;; *) continue ;; esac   # tag… → bỏ qua
+  branch=${remote_ref#refs/heads/}
+  if [ "$branch" = main ] || [ "$branch" = develop ]; then
+    if [ "${ALLOW_PROTECTED_PUSH:-}" != 1 ]; then
+      echo "✗ Không push trực tiếp lên '$branch' — mở Pull Request từ nhánh feature/bugfix/release/hotfix." >&2
+      exit 1
+    fi
+    continue
+  fi
+  if ! printf '%s' "$branch" | grep -qE '^(feature|bugfix)/[a-z0-9][a-z0-9-]*$|^(release|hotfix)/[0-9]+\.[0-9]+\.[0-9]+$'; then
+    echo "✗ Tên nhánh '$branch' sai Git Flow (feature/…, bugfix/…, release/x.y.z, hotfix/x.y.z)." >&2
+    exit 1
+  fi
+done
