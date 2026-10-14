@@ -14,7 +14,7 @@ class AuthTest extends IntegrationTest {
     @Test
     void registerReturnsTokensThatAuthenticate() throws Exception {
         JsonNode tokens = read(post("/api/auth/register", null,
-                Map.of("email", " Lan@Example.com ", "password", "password123", "displayName", "Lan"))
+                Map.of("email", " Lan@Example.com ", "password", "password123", "displayName", "Lan", "gender", "MALE"))
                 .andExpect(status().isCreated()));
 
         assertThat(tokens.get("refreshToken").asText()).isNotBlank();
@@ -38,14 +38,14 @@ class AuthTest extends IntegrationTest {
     @Test
     void duplicateEmailIgnoringCaseIsRejected() throws Exception {
         register("lan@x.vn", "Lan");
-        post("/api/auth/register", null, Map.of("email", "LAN@x.vn", "password", "password123", "displayName", "L2"))
+        post("/api/auth/register", null, Map.of("email", "LAN@x.vn", "password", "password123", "displayName", "L2", "gender", "MALE"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.code").value("EMAIL_TAKEN"));
     }
 
     @Test
     void invalidRegisterBodyReturnsFieldErrors() throws Exception {
-        post("/api/auth/register", null, Map.of("email", "not-an-email", "password", "short", "displayName", ""))
+        post("/api/auth/register", null, Map.of("email", "not-an-email", "password", "short", "displayName", "", "gender", "MALE"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"))
                 .andExpect(jsonPath("$.fields.email").exists())
@@ -72,7 +72,7 @@ class AuthTest extends IntegrationTest {
     @Test
     void refreshRotatesTokenAndOldOneStopsWorking() throws Exception {
         JsonNode first = read(post("/api/auth/register", null,
-                Map.of("email", "lan@x.vn", "password", "password123", "displayName", "Lan")));
+                Map.of("email", "lan@x.vn", "password", "password123", "displayName", "Lan", "gender", "MALE")));
         String oldRefresh = first.get("refreshToken").asText();
 
         JsonNode second = read(post("/api/auth/refresh", null, Map.of("refreshToken", oldRefresh))
@@ -87,7 +87,7 @@ class AuthTest extends IntegrationTest {
     @Test
     void logoutRevokesRefreshToken() throws Exception {
         JsonNode tokens = read(post("/api/auth/register", null,
-                Map.of("email", "lan@x.vn", "password", "password123", "displayName", "Lan")));
+                Map.of("email", "lan@x.vn", "password", "password123", "displayName", "Lan", "gender", "MALE")));
         String refresh = tokens.get("refreshToken").asText();
 
         post("/api/auth/logout", null, Map.of("refreshToken", refresh)).andExpect(status().isNoContent());

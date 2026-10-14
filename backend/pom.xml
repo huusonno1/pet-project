@@ -13,7 +13,7 @@
 
     <groupId>com.coupleapp</groupId>
     <artifactId>backend</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>1.0.0</version>
     <name>couple-app-backend</name>
 
     <properties>

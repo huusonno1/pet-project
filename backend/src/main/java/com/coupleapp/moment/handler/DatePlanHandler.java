@@ -39,7 +39,7 @@ public class DatePlanHandler implements MomentTypeHandler {
 
     @Override
     public List<Occurrence> occurrences(Moment m, ReminderConfig cfg, LocalDate from, LocalDate to) {
-        return Occurrences.single(m, from, to);
+        return Occurrences.recurring(m, from, to);
     }
 
     @Override

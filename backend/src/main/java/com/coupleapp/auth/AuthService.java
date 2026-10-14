@@ -5,6 +5,7 @@ import com.coupleapp.auth.AuthDtos.RegisterRequest;
 import com.coupleapp.auth.AuthDtos.TokenResponse;
 import com.coupleapp.common.ApiException;
 import com.coupleapp.common.ErrorCode;
+import com.coupleapp.user.HandleGenerator;
 import com.coupleapp.user.User;
 import com.coupleapp.user.UserRepository;
 import com.coupleapp.user.UserSettings;
@@ -26,6 +27,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokens;
     private final PasswordEncoder passwords;
     private final TokenService tokens;
+    private final HandleGenerator handles;
     private final Clock clock;
 
     @Transactional
@@ -38,6 +40,8 @@ public class AuthService {
         u.setEmail(email);
         u.setPasswordHash(passwords.encode(r.password()));
         u.setDisplayName(r.displayName().trim());
+        u.setHandle(handles.generate(u.getDisplayName()));
+        u.setGender(r.gender());
         try {
             users.saveAndFlush(u);
         } catch (DataIntegrityViolationException e) {

@@ -6,6 +6,7 @@ export const TYPE_LABELS: Record<MomentType, string> = {
   GIFT_OCCASION: 'Dịp tặng quà',
   CYCLE: 'Chu kỳ',
   CUSTOM: 'Khác',
+  MOMENT: 'Khoảnh khắc',
 };
 
 export const CREATABLE_TYPES: MomentType[] = ['ANNIVERSARY', 'DATE_PLAN', 'GIFT_OCCASION', 'CUSTOM'];
@@ -24,4 +25,17 @@ export function daysLeftLabel(days: number): string {
   if (days === 0) return 'Hôm nay';
   if (days === 1) return 'Ngày mai';
   return `Còn ${days} ngày`;
+}
+
+export const MOODS: { code: string; label: string }[] = [
+  { code: 'MISSING', label: 'Nhớ nhung' },
+  { code: 'HAPPY', label: 'Hạnh phúc' },
+  { code: 'PEACEFUL', label: 'Bình yên' },
+  { code: 'GRATEFUL', label: 'Biết ơn' },
+  { code: 'SAD', label: 'Buồn một chút' },
+  { code: 'OTHER', label: 'Khác' },
+];
+
+export function moodLabel(code: unknown): string | null {
+  return MOODS.find((m) => m.code === code)?.label ?? null;
 }

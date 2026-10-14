@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Xem trước ảnh</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FFF8F3; font-family: 'Be Vietnam Pro', sans-serif; color: #2B1A2E;">
+  <div style="position: absolute; left: 20px; top: 52px; width: 350px; display: flex; align-items: center; justify-content: space-between;">
+    <a href="C1-Camera.dc.html" aria-label="Đóng" style="width: 44px; height: 44px; box-sizing: border-box; border-radius: 22px; border: 1px solid #EADFD9; background: #FFFFFF; color: #2B1A2E; display: flex; align-items: center; justify-content: center;"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></a>
+    <span style="display: flex; align-items: center; gap: 8px; height: 40px; box-sizing: border-box; padding: 0 14px 0 6px; border-radius: 999px; border: 1px solid #EADFD9; background: #FFFFFF; font-size: 15px; font-weight: 700;">
+      <span aria-hidden="true" style="width: 28px; height: 28px; border-radius: 14px; background: #EEEAFF; color: #5B4BC4; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800;">M</span>
+      Chia sẻ với Minh
+    </span>
+    <span style="width: 44px;"></span>
+  </div>
+
+  <div role="img" aria-label="Ảnh vừa chụp với chữ “Nhớ anh quá à” và hiệu ứng tim bay" style="position: absolute; left: 16px; top: 112px; width: 358px; height: 358px; border-radius: 56px; overflow: hidden; background: linear-gradient(135deg, #FFC1CF, #F7859F); box-shadow: 0 14px 30px rgba(43,26,46,0.15);">
+    <span style="position: absolute; left: 119px; top: 92px; width: 120px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.35);"></span>
+    <span style="position: absolute; left: 59px; top: 240px; width: 240px; height: 200px; border-radius: 50%; background: rgba(255,255,255,0.28);"></span>
+    <sc-if value="{{hearts}}" hint-placeholder-val="{{true}}">
+      <svg aria-hidden="true" style="position: absolute; left: 36px; top: 40px; opacity: 0.9;" width="34" height="34" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"></path></svg>
+      <svg aria-hidden="true" style="position: absolute; left: 290px; top: 60px; opacity: 0.8;" width="26" height="26" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"></path></svg>
+      <svg aria-hidden="true" style="position: absolute; left: 60px; top: 250px; opacity: 0.85;" width="22" height="22" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"></path></svg>
+      <svg aria-hidden="true" style="position: absolute; left: 300px; top: 230px; opacity: 0.9;" width="30" height="30" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"></path></svg>
+    </sc-if>
+    <sc-if value="{{stamp}}" hint-placeholder-val="{{false}}">
+      <span style="position: absolute; right: 22px; top: 22px; padding: 4px 10px; border-radius: 8px; border: 2px solid #FFFFFF; color: #FFFFFF; font-size: 13px; font-weight: 800; letter-spacing: 0.04em;">11.10.2026</span>
+    </sc-if>
+    <span style="position: absolute; left: 50%; top: 290px; transform: translateX(-50%); padding: 10px 18px; border-radius: 999px; background: rgba(0,0,0,0.3); color: #FFFFFF; font-size: 15px; font-weight: 700; white-space: nowrap;">Nhớ anh quá à</span>
+  </div>
+
+  <div style="position: absolute; left: 0; top: 492px; width: 390px; display: flex; justify-content: center; gap: 8px;">
+    <sc-for list="{{tools}}" as="t" hint-placeholder-count="4">
+      <button type="button" aria-pressed="{{t.pressed}}" onClick="{{t.toggle}}" style="{{t.style}}">{{t.label}}</button>
+    </sc-for>
+  </div>
+
+  <div style="position: absolute; left: 24px; top: 560px; width: 342px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px;">
+    <a href="C1-Camera.dc.html" style="height: 52px; box-sizing: border-box; border-radius: 18px; border: 1.5px solid #EADFD9; background: #FFFFFF; color: #2B1A2E; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; text-decoration: none;">Chụp lại</a>
+    <a href="C3-Phan-loai.dc.html" style="height: 52px; border-radius: 18px; background: #C9365C; color: #FFFFFF; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; text-decoration: none;">Tiếp tục</a>
+  </div>
+
+  <a href="B3-Loi-nhan.dc.html" style="position: absolute; left: 0; top: 636px; width: 390px; height: 44px; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; color: #6F5B6A; text-decoration: none;">
+    <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"></path></svg>
+    Hoặc chỉ gửi nhanh cho Minh (không lưu Nhật ký)
+  </a>
+
+  <div style="position: absolute; left: 0; bottom: 0; width: 390px;">
+    <dc-import name="TabBar" active="create" hint-size="390px,96px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { on: { 'Thêm chữ': false, 'Tim bay': true, 'Tem ngày': false, 'Hiệu ứng': false } };
+  }
+  renderVals() {
+    const on = this.state.on;
+    const tools = Object.keys(on).map((label) => ({
+      label,
+      pressed: on[label] ? 'true' : 'false',
+      toggle: () => this.setState({ on: { ...on, [label]: !on[label] } }),
+      style: 'font: inherit; height: 38px; padding: 0 12px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600; ' +
+        (on[label] ? 'border: 0; background: #C9365C; color: #FFFFFF;' : 'border: 1px solid #EADFD9; background: #FFFFFF; color: #2B1A2E;'),
+    }));
+    return { tools, hearts: on['Tim bay'], stamp: on['Tem ngày'] };
+  }
+}
+</script>
+</body>
+</html>

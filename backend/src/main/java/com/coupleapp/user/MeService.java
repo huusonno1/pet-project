@@ -56,6 +56,12 @@ public class MeService {
             media.requireAvatar(userId, r.avatarMediaId());
             u.setAvatarMediaId(r.avatarMediaId());
         }
+        if (r.gender() != null && r.gender() != u.getGender()) {
+            u.setGender(r.gender());
+            if (r.gender() != Gender.FEMALE) {
+                stopCycleTracking(userId); // dữ liệu chu kỳ vẫn giữ, đổi lại Nữ thì bật lại được
+            }
+        }
         u.setUpdatedAt(clock.instant());
         return toResponse(u);
     }
@@ -70,11 +76,21 @@ public class MeService {
         UserSettings s = settings.findById(userId).orElseGet(() -> new UserSettings(userId));
         boolean locationBefore = s.isShareLocation();
         boolean cycleBefore = s.isShareCycle();
+        boolean trackingBefore = s.isCycleTracking();
         if (r.shareLocation() != null) {
             s.setShareLocation(r.shareLocation());
         }
         if (r.shareCycle() != null) {
             s.setShareCycle(r.shareCycle());
+        }
+        if (r.discoverable() != null) {
+            s.setDiscoverable(r.discoverable());
+        }
+        if (r.cycleTracking() != null) {
+            if (r.cycleTracking() && load(userId).getGender() != Gender.FEMALE) {
+                throw new ApiException(ErrorCode.VALIDATION_FAILED, "Chỉ tài khoản nữ mới theo dõi chu kỳ");
+            }
+            s.setCycleTracking(r.cycleTracking());
         }
         if (r.notifyPrefs() != null) {
             for (Map.Entry<String, Boolean> e : r.notifyPrefs().entrySet()) {
@@ -87,8 +103,18 @@ public class MeService {
         settings.save(s);
         events.publishEvent(new UserSettingsChangedEvent(
                 userId, s.isShareLocation(), s.isShareCycle(),
-                locationBefore != s.isShareLocation(), cycleBefore != s.isShareCycle()));
+                locationBefore != s.isShareLocation(), cycleBefore != s.isShareCycle(),
+                trackingBefore != s.isCycleTracking()));
         return toResponse(s);
+    }
+
+    private void stopCycleTracking(UUID userId) {
+        settings.findById(userId).filter(UserSettings::isCycleTracking).ifPresent(s -> {
+            s.setCycleTracking(false);
+            settings.save(s);
+            events.publishEvent(new UserSettingsChangedEvent(
+                    userId, s.isShareLocation(), s.isShareCycle(), false, false, true));
+        });
     }
 
     User load(UUID userId) {
@@ -97,11 +123,13 @@ public class MeService {
 
     MeResponse toResponse(User u) {
         String avatarUrl = u.getAvatarMediaId() == null ? null : media.avatarUrl(u.getAvatarMediaId()).orElse(null);
-        return new MeResponse(u.getId(), u.getEmail(), u.getDisplayName(), u.getBirthday(), u.getTimezone(), avatarUrl);
+        return new MeResponse(u.getId(), u.getEmail(), u.getDisplayName(), u.getHandle(), u.getBirthday(),
+                u.getTimezone(), avatarUrl, u.getGender());
     }
 
     private static SettingsResponse toResponse(UserSettings s) {
         return new SettingsResponse(
-                s.isShareLocation(), s.isShareCycle(), s.getCycleLengthDefault(), Map.copyOf(s.getNotifyPrefs()));
+                s.isShareLocation(), s.isShareCycle(), s.getCycleLengthDefault(), Map.copyOf(s.getNotifyPrefs()),
+                s.isDiscoverable(), s.isCycleTracking());
     }
 }

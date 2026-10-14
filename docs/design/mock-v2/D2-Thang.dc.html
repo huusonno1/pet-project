@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Nhật ký — Tháng</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FFF8F3; font-family: 'Be Vietnam Pro', sans-serif; color: #2B1A2E;">
+  <div style="position: absolute; left: 24px; top: 52px; width: 342px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 800;">Nhật ký</h1>
+        <p style="margin: 0; font-size: 13px; color: #6F5B6A;">Tháng 10 · 2026 · 14 kỷ niệm</p>
+      </div>
+      <button type="button" aria-label="Tìm kiếm" style="font: inherit; width: 44px; height: 44px; border-radius: 22px; border: 0; background: #FFFFFF; box-shadow: 0 4px 12px rgba(43,26,46,0.08); display: flex; align-items: center; justify-content: center; color: #2B1A2E; cursor: pointer;"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="m21 21-4.3-4.3"></path></svg></button>
+    </div>
+
+    <div role="tablist" aria-label="Kiểu xem" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 16px; background: #F6EEEA;">
+      <a href="D1-Nhat-ky.dc.html" role="tab" aria-selected="false" style="height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #6F5B6A; text-decoration: none;">Lưới</a>
+      <span role="tab" aria-selected="true" style="height: 38px; border-radius: 12px; background: #FFFFFF; box-shadow: 0 2px 8px rgba(43,26,46,0.08); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700;">Tháng</span>
+      <a href="D3-Nam.dc.html" role="tab" aria-selected="false" style="height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #6F5B6A; text-decoration: none;">Năm</a>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <button type="button" aria-label="Tháng trước" style="font: inherit; width: 40px; height: 40px; border-radius: 20px; border: 1px solid #EADFD9; background: #FFFFFF; color: #2B1A2E; display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg></button>
+      <h2 style="margin: 0; font-size: 20px; font-weight: 700;">Tháng 10, 2026</h2>
+      <button type="button" aria-label="Tháng sau" style="font: inherit; width: 40px; height: 40px; border-radius: 20px; border: 1px solid #EADFD9; background: #FFFFFF; color: #2B1A2E; display: flex; align-items: center; justify-content: center; cursor: pointer;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg></button>
+    </div>
+
+    <div style="padding: 12px 8px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 8px 24px rgba(43,26,46,0.06); display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px;">
+      <sc-for list="{{weekdays}}" as="w" hint-placeholder-count="7">
+        <span style="{{w.style}}">{{w.label}}</span>
+      </sc-for>
+      <sc-for list="{{cells}}" as="c" hint-placeholder-count="35">
+        <span style="display: flex; justify-content: center;">
+          <sc-if value="{{c.has}}" hint-placeholder-val="{{true}}">
+            <button type="button" onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" aria-label="{{c.aria}}" style="{{c.style}}">
+              <span>{{c.label}}</span>
+              <sc-if value="{{c.multi}}" hint-placeholder-val="{{false}}"><span style="font-size: 9px; font-weight: 800;">{{c.count}}</span></sc-if>
+            </button>
+          </sc-if>
+        </span>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; align-items: baseline; justify-content: space-between;">
+      <h3 style="margin: 0; font-size: 17px; font-weight: 700;">{{dayTitle}}</h3>
+      <a href="C1-Camera.dc.html" style="font-size: 13px; font-weight: 600; color: #C9365C; text-decoration: none;">+ Thêm vào ngày này</a>
+    </div>
+    <sc-if value="{{hasItems}}" hint-placeholder-val="{{true}}">
+      <a href="D4-Chi-tiet-ngay.dc.html" style="padding: 12px 16px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 8px 24px rgba(43,26,46,0.06); display: flex; align-items: center; gap: 12px; color: #2B1A2E; text-decoration: none;">
+        <span aria-hidden="true" style="{{thumbStyle}}"></span>
+        <span style="display: flex; flex-direction: column; flex-grow: 1;"><span style="font-size: 15px; font-weight: 700;">{{dayName}}</span><span style="font-size: 13px; color: #6F5B6A;">{{daySub}}</span></span>
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6F5B6A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </a>
+    </sc-if>
+    <sc-if value="{{noItems}}" hint-placeholder-val="{{false}}">
+      <p style="margin: 0; padding: 16px; border-radius: 20px; border: 1.5px dashed #EADFD9; text-align: center; font-size: 13px; color: #6F5B6A;">Chưa có kỷ niệm nào ngày này</p>
+    </sc-if>
+  </div>
+
+  <div style="position: absolute; left: 0; bottom: 0; width: 390px;">
+    <dc-import name="TabBar" active="journal" hint-size="390px,96px"></dc-import>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: 10 };
+  }
+  renderVals() {
+    const G = [['#FFC8B4', '#F38BA8'], ['#C9D8FF', '#A99BF0'], ['#BFEBD9', '#7CC9AE'], ['#FFE1A8', '#FFAE8A']];
+    const M = {
+      4: { g: 3, n: 3, name: 'Cafe sáng Chủ nhật', sub: '3 kỷ niệm · 4 ảnh' },
+      8: { g: 1, n: 1, name: 'Xem phim tối thứ Năm', sub: 'Hẹn hò · 2 ảnh' },
+      10: { g: 0, n: 5, name: '5 kỷ niệm trong ngày', sub: 'Khoảnh khắc, Hẹn hò, Quà…' },
+      12: { g: 2, n: 1, name: 'Picnic Hồ Tây', sub: 'Hẹn hò · 6 ảnh' },
+      20: { g: 0, n: 2, name: 'Sinh nhật em', sub: 'Tặng quà · 3 ảnh' },
+      28: { g: 1, n: 1, name: 'Đi Đà Lạt', sub: 'Lịch hẹn · sắp tới' },
+    };
+    const names = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật'];
+    const offset = 3, days = 31, today = 11, sel = this.state.sel;
+    const cells = [];
+    for (let i = 0; i < 35; i++) {
+      const d = i - offset + 1;
+      const has = d >= 1 && d <= days;
+      const m = M[d];
+      const on = d === sel;
+      let look;
+      if (m) look = 'background: linear-gradient(140deg, ' + G[m.g][0] + ', ' + G[m.g][1] + '); color: #2B1A2E; font-weight: 700;';
+      else if (d === 18) look = 'background: #FFEEDF; color: #2B1A2E; font-weight: 700;';
+      else look = 'background: transparent; color: ' + (i % 7 === 6 ? '#C9365C' : '#2B1A2E') + '; font-weight: 500;';
+      const ring = on ? ' outline: 2.5px solid #C9365C; outline-offset: 1px;' : (d === today ? ' outline: 1.5px dashed #C9365C;' : '');
+      cells.push({
+        has,
+        label: has ? String(d) : '',
+        multi: !!m && m.n > 1,
+        count: m ? '•'.repeat(Math.min(m.n, 3)) : '',
+        aria: 'Ngày ' + d + (m ? ', ' + m.n + ' kỷ niệm' : '') + (d === 18 ? ', sinh nhật Minh' : ''),
+        pressed: on ? 'true' : 'false',
+        pick: () => this.setState({ sel: d }),
+        style: 'font: inherit; width: 40px; height: 46px; border-radius: 14px; border: 0; cursor: pointer; font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; gap: 2px; ' + look + ring,
+      });
+    }
+    const weekdays = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((label) => ({ label, style: 'text-align: center; padding: 2px 0 4px; font-size: 11px; font-weight: 700; color: ' + (label === 'CN' ? '#C9365C' : '#6F5B6A') + ';' }));
+    const m = M[sel];
+    const wd = names[(sel + offset - 1) % 7];
+    return {
+      weekdays, cells,
+      dayTitle: wd + ', ' + String(sel).padStart(2, '0') + '/10' + (sel === 18 ? ' · Sinh nhật Minh' : ''),
+      hasItems: !!m,
+      noItems: !m,
+      dayName: m ? m.name : '',
+      daySub: m ? m.sub : '',
+      thumbStyle: m ? 'width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0; background: linear-gradient(140deg, ' + G[m.g][0] + ', ' + G[m.g][1] + ');' : '',
+    };
+  }
+}
+</script>
+</body>
+</html>

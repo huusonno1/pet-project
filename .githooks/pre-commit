@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Không commit thẳng lên main/develop; tên nhánh phải đúng Git Flow — xem docs/GIT_FLOW.md mục 1.
+branch=$(git symbolic-ref --short HEAD 2>/dev/null) || exit 0   # detached HEAD (rebase…) → bỏ qua
+case "$branch" in
+  main|develop)
+    echo "✗ Không commit trực tiếp lên '$branch'. Tạo nhánh: git switch -c feature/<tên> develop" >&2
+    exit 1 ;;
+esac
+if ! printf '%s' "$branch" | grep -qE '^(feature|bugfix)/[a-z0-9][a-z0-9-]*$|^(release|hotfix)/[0-9]+\.[0-9]+\.[0-9]+$'; then
+  echo "✗ Tên nhánh '$branch' sai Git Flow. Dùng feature/<tên>, bugfix/<tên>, release/x.y.z, hotfix/x.y.z" >&2
+  exit 1
+fi

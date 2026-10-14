@@ -7,4 +7,5 @@ public record UserSettingsChangedEvent(
         boolean shareLocation,
         boolean shareCycle,
         boolean shareLocationChanged,
-        boolean shareCycleChanged) {}
+        boolean shareCycleChanged,
+        boolean cycleTrackingChanged) {}

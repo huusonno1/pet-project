@@ -73,11 +73,12 @@ class MediaTest extends IntegrationTest {
     }
 
     @Test
-    void sharedUploadRequiresCouple() throws Exception {
+    void unpairedUploadIsPersonal() throws Exception {
         String lan = register("lan@x.vn", "Lan");
-        post("/api/media/upload-url", lan, Map.of("contentType", "image/jpeg", "sizeBytes", 10))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("COUPLE_REQUIRED"));
+        String id = read(post("/api/media/upload-url", lan, Map.of("contentType", "image/jpeg", "sizeBytes", 10))
+                .andExpect(status().isCreated())).get("mediaId").asText();
+        assertThat(jdbc.queryForObject("select object_key from media where id = ?::uuid", String.class, id))
+                .startsWith("users/");
     }
 
     @Test

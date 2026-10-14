@@ -3,6 +3,9 @@ package com.coupleapp.trait;
 import com.coupleapp.common.ApiException;
 import com.coupleapp.common.ErrorCode;
 import com.coupleapp.couple.CoupleAccess;
+import com.coupleapp.couple.CoupleContext;
+import com.coupleapp.media.MediaDtos.MediaDto;
+import com.coupleapp.media.MediaService;
 import com.coupleapp.trait.TraitDtos.CatalogItem;
 import com.coupleapp.trait.TraitDtos.CatalogResponse;
 import com.coupleapp.trait.TraitDtos.LinkDto;
@@ -43,6 +46,7 @@ public class TraitService {
     private final SizeEntryRepository sizes;
     private final PreferenceRepository preferences;
     private final CoupleAccess couples;
+    private final MediaService media;
     private final Clock clock;
 
     public CatalogResponse catalog() {
@@ -57,7 +61,7 @@ public class TraitService {
                 .map(TraitService::toDto).toList();
         List<PreferenceDto> p = preferences.findBySubjectUserIdOrderByCreatedAtAsc(subject).stream()
                 .filter(e -> visible(me, e.getVisibility(), e.getCreatedBy()))
-                .map(TraitService::toDto).toList();
+                .map(this::toDto).toList();
         return new TraitsResponse(s, p);
     }
 
@@ -115,6 +119,7 @@ public class TraitService {
         if (r.links() != null) {
             r.links().forEach(l -> p.getLinks().add(toEntity(l)));
         }
+        applyImage(p, me, r.imageMediaId());
         return toDto(preferences.save(p));
     }
 
@@ -133,6 +138,7 @@ public class TraitService {
             p.getLinks().clear();
             r.links().forEach(l -> p.getLinks().add(toEntity(l)));
         }
+        applyImage(p, me, r.imageMediaId());
         p.setUpdatedAt(clock.instant());
         preferences.flush();
         return toDto(p);
@@ -143,6 +149,15 @@ public class TraitService {
         Preference p = preferences.findById(id).orElseThrow(ApiException::notFound);
         requireEditable(me, p.getSubjectUserId(), p.getVisibility(), p.getCreatedBy());
         preferences.delete(p);
+    }
+
+    private void applyImage(Preference p, UUID me, UUID imageMediaId) {
+        if (imageMediaId == null) {
+            return;
+        }
+        UUID coupleId = couples.findActive(me).map(CoupleContext::coupleId).orElse(null);
+        media.requireUsable(List.of(imageMediaId), coupleId, me);
+        p.setImageMediaId(imageMediaId);
     }
 
     private void requireAccess(UUID me, UUID subject) {
@@ -183,10 +198,12 @@ public class TraitService {
                 e.getVisibility(), e.getCreatedBy(), e.getUpdatedAt());
     }
 
-    private static PreferenceDto toDto(Preference p) {
+    private PreferenceDto toDto(Preference p) {
         List<LinkDto> links = p.getLinks().stream()
                 .map(l -> new LinkDto(l.getId(), l.getUrl(), l.getLabel(), l.getPrice())).toList();
+        MediaDto image = p.getImageMediaId() == null ? null
+                : media.dtos(List.of(p.getImageMediaId())).stream().findFirst().orElse(null);
         return new PreferenceDto(p.getId(), p.getSubjectUserId(), p.getCategory(), p.getBrand(), p.getName(),
-                p.getColor(), p.getNote(), p.getVisibility(), p.getCreatedBy(), p.getUpdatedAt(), links);
+                p.getColor(), p.getNote(), p.getVisibility(), p.getCreatedBy(), p.getUpdatedAt(), links, image);
     }
 }

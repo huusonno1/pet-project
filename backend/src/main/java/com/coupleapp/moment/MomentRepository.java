@@ -12,10 +12,12 @@ public interface MomentRepository extends JpaRepository<Moment, UUID> {
 
     List<Moment> findByCoupleIdOrderByOccursOnAsc(UUID coupleId);
 
+    List<Moment> findByCoupleIdIsNullAndCreatedByOrderByOccursOnAsc(UUID createdBy);
+
     Optional<Moment> findFirstByCoupleIdAndTypeAndSubjectUserId(UUID coupleId, MomentType type, UUID subjectUserId);
 
     List<Moment> findByTypeAndOccursOnBefore(MomentType type, LocalDate date);
 
-    @Query("select m from Moment m where m.type in :types or m.recurrence = :recurrence")
-    List<Moment> findRecurring(Collection<MomentType> types, Recurrence recurrence);
+    @Query("select m from Moment m where m.type in :types or m.recurrence in :recurrences")
+    List<Moment> findRecurring(Collection<MomentType> types, Collection<Recurrence> recurrences);
 }

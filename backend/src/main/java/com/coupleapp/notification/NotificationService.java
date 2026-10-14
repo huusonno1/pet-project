@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Gửi push ngay (không qua bảng reminders), dùng cho sự kiện tức thời. */
+/** Ghi hộp thông báo rồi gửi push ngay (không qua bảng reminders), dùng cho sự kiện tức thời. */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -16,9 +16,11 @@ public class NotificationService {
 
     private final DeviceTokenRepository devices;
     private final PushSender push;
+    private final InboxService inbox;
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void sendNow(UUID userId, String title, String body, String deepLink) {
+    public void sendNow(UUID userId, String kind, String title, String body, String deepLink) {
+        inbox.record(userId, kind, title, body, deepLink);
         List<DeviceToken> tokens = devices.findByUserId(userId);
         if (tokens.isEmpty()) {
             return;

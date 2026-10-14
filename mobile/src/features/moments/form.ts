@@ -1,4 +1,4 @@
-import type { Moment, MomentInput, MomentType, PlaceInput } from '@/lib/api/types';
+import type { Moment, MomentInput, MomentType, PlaceInput, Recurrence } from '@/lib/api/types';
 import { combineDateTime, formatTime, toIsoDate } from '@/lib/format';
 
 import { OCCASIONS } from './labels';
@@ -13,20 +13,24 @@ export type MomentForm = {
   message: string;
   occasion: string | null;
   subject: SubjectChoice | null;
-  yearly: boolean;
+  recurrence: Recurrence;
   place: PlaceInput | null;
 };
 
-export function emptyForm(today: Date): MomentForm {
+export function repeatOptions(type: MomentType): Recurrence[] {
+  return type === 'CUSTOM' || type === 'DATE_PLAN' ? ['NONE', 'WEEKLY', 'MONTHLY', 'YEARLY'] : [];
+}
+
+export function emptyForm(today: Date, type: MomentType = 'ANNIVERSARY'): MomentForm {
   return {
-    type: 'ANNIVERSARY',
+    type,
     title: '',
     date: toIsoDate(today),
-    time: null,
+    time: type === 'DATE_PLAN' ? '19:00' : null,
     message: '',
     occasion: null,
     subject: null,
-    yearly: false,
+    recurrence: type === 'GIFT_OCCASION' ? 'YEARLY' : 'NONE',
     place: null,
   };
 }
@@ -40,7 +44,7 @@ export function formFromMoment(m: Moment, meId: string): MomentForm {
     message: m.message ?? '',
     occasion: typeof m.details.occasion === 'string' ? m.details.occasion : null,
     subject: m.subjectUserId ? (m.subjectUserId === meId ? 'me' : 'partner') : null,
-    yearly: m.recurrence === 'YEARLY',
+    recurrence: m.recurrence,
     place: null,
   };
 }
@@ -75,10 +79,11 @@ export function toMomentInput(
   const input: MomentInput = {
     title: f.title.trim(),
     occursOn: f.date,
-    recurrence: f.type === 'GIFT_OCCASION' || (f.type === 'CUSTOM' && f.yearly) ? 'YEARLY' : 'NONE',
     message: f.message.trim(),
     mediaIds,
   };
+  if (f.type === 'GIFT_OCCASION') input.recurrence = 'YEARLY';
+  else if (repeatOptions(f.type).includes(f.recurrence)) input.recurrence = f.recurrence;
   if (mode === 'create') {
     input.type = f.type;
   }

@@ -14,7 +14,9 @@ class CycleEventsListener {
 
     @EventListener
     void onSettingsChanged(UserSettingsChangedEvent e) {
-        if (e.shareCycleChanged()) {
+        if (e.cycleTrackingChanged()) {
+            cycles.refresh(e.userId());
+        } else if (e.shareCycleChanged()) {
             cycles.replanFor(e.userId());
         }
     }

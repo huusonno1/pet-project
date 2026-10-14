@@ -67,6 +67,14 @@ public class ReminderScheduler {
     @Transactional
     public void replan(Moment m) {
         reminders.cancelPendingByMoment(m.getId());
+        Instant now = clock.instant();
+        if (m.getCoupleId() == null) {
+            User owner = users.findById(m.getCreatedBy()).orElseThrow();
+            PlanningContext ctx = new PlanningContext(owner.getId(), null, owner.getDisplayName(), null,
+                    owner.zone(), owner.zone(), false, now, now.plus(HORIZON));
+            save(m, planner.plan(m, handler(m.getType()), ctx), now);
+            return;
+        }
         Optional<CoupleContext> active = couples.findActive(m.ownerId())
                 .filter(c -> c.coupleId().equals(m.getCoupleId()));
         if (active.isEmpty()) {
@@ -76,11 +84,13 @@ public class ReminderScheduler {
         User owner = users.findById(c.userId()).orElseThrow();
         User partner = users.findById(c.partnerId()).orElseThrow();
         boolean cycleShared = settings.findById(owner.getId()).map(UserSettings::isShareCycle).orElse(true);
-        Instant now = clock.instant();
         PlanningContext ctx = new PlanningContext(owner.getId(), partner.getId(), owner.getDisplayName(),
                 partner.getDisplayName(), owner.zone(), partner.zone(), cycleShared, now, now.plus(HORIZON));
+        save(m, planner.plan(m, handler(m.getType()), ctx), now);
+    }
 
-        for (ReminderPlan p : planner.plan(m, handler(m.getType()), ctx)) {
+    private void save(Moment m, List<ReminderPlan> plans, Instant now) {
+        for (ReminderPlan p : plans) {
             Reminder r = new Reminder();
             r.setCoupleId(m.getCoupleId());
             r.setMomentId(m.getId());
@@ -98,7 +108,8 @@ public class ReminderScheduler {
     @Transactional
     public int replanAllRecurring() {
         List<Moment> recurring = moments.findRecurring(
-                EnumSet.of(MomentType.ANNIVERSARY, MomentType.GIFT_OCCASION, MomentType.CYCLE), Recurrence.YEARLY);
+                EnumSet.of(MomentType.ANNIVERSARY, MomentType.GIFT_OCCASION, MomentType.CYCLE),
+                EnumSet.of(Recurrence.WEEKLY, Recurrence.MONTHLY, Recurrence.YEARLY));
         recurring.forEach(this::replan);
         return recurring.size();
     }

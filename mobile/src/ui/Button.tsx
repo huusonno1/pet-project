@@ -1,47 +1,63 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, StyleProp, StyleSheet, ViewStyle } from 'react-native';
 
-import { colors, radius, spacing } from './theme';
+import { AppText } from './AppText';
+import { Icon, IconName } from './Icon';
+import { colors } from './theme';
+
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+
+const VARIANTS: Record<Variant, { bg: string; fg: string; border: string }> = {
+  primary: { bg: colors.roseStrong, fg: colors.white, border: colors.roseStrong },
+  secondary: { bg: colors.surface, fg: colors.text, border: colors.line },
+  ghost: { bg: 'transparent', fg: colors.roseStrong, border: 'transparent' },
+  danger: { bg: colors.surface, fg: colors.danger, border: colors.line },
+};
 
 type Props = {
   title: string;
-  onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'danger';
-  loading?: boolean;
+  onPress?: () => void;
+  variant?: Variant;
   disabled?: boolean;
+  loading?: boolean;
+  icon?: IconName;
+  compact?: boolean;
+  testID?: string;
+  style?: StyleProp<ViewStyle>;
 };
 
-export function Button({ title, onPress, variant = 'primary', loading = false, disabled = false }: Props) {
+export function Button({ title, onPress, variant = 'primary', disabled = false, loading = false, icon, compact, testID, style }: Props) {
+  const v = VARIANTS[variant];
   const inactive = disabled || loading;
   return (
     <Pressable
+      testID={testID}
       accessibilityRole="button"
       accessibilityLabel={title}
       accessibilityState={{ disabled: inactive, busy: loading }}
       disabled={inactive}
       onPress={onPress}
-      style={({ pressed }) => [styles.base, styles[variant], (pressed || inactive) && styles.dim]}>
+      style={({ pressed }) => [
+        styles.base,
+        compact && styles.compact,
+        { backgroundColor: v.bg, borderColor: v.border },
+        (pressed || inactive) && { opacity: inactive ? 0.5 : 0.85 },
+        style,
+      ]}>
       {loading ? (
-        <ActivityIndicator color={variant === 'secondary' ? colors.primary : '#fff'} />
+        <ActivityIndicator color={v.fg} />
       ) : (
-        <Text style={[styles.text, variant === 'secondary' && styles.textSecondary]}>{title}</Text>
+        <>
+          {icon ? <Icon name={icon} size={18} color={v.fg} /> : null}
+          <AppText variant="bodyStrong" color={v.fg} style={{ fontSize: compact ? 15 : 16 }}>
+            {title}
+          </AppText>
+        </>
       )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  base: {
-    minHeight: 48,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: spacing.xs,
-  },
-  primary: { backgroundColor: colors.primary },
-  secondary: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.primary },
-  danger: { backgroundColor: colors.danger },
-  dim: { opacity: 0.6 },
-  text: { color: '#fff', fontWeight: '600', fontSize: 16 },
-  textSecondary: { color: colors.primary },
+  base: { height: 54, borderRadius: 18, borderWidth: 1.5, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 16 },
+  compact: { height: 44, borderRadius: 16 },
 });

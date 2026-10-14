@@ -1,23 +1,25 @@
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { useQueryClient } from '@tanstack/react-query';
 import { Tabs } from 'expo-router/js-tabs';
-import type { ColorValue } from 'react-native';
 
-import { colors } from '@/ui/theme';
-
-type IconName = React.ComponentProps<typeof Ionicons>['name'];
-
-export function tabIcon(name: IconName) {
-  return ({ color, size }: { color: ColorValue; size: number }) => <Ionicons name={name} color={color} size={size} />;
-}
+import { TabBar, TabName } from '@/ui/TabBar';
 
 export default function TabsLayout() {
+  const client = useQueryClient();
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: colors.primary, headerTintColor: colors.text }}>
-      <Tabs.Screen name="index" options={{ title: 'Trang chủ', tabBarIcon: tabIcon('heart') }} />
-      <Tabs.Screen name="moments" options={{ title: 'Kỷ niệm', tabBarIcon: tabIcon('images') }} />
-      <Tabs.Screen name="cycle" options={{ title: 'Chu kỳ', tabBarIcon: tabIcon('flower') }} />
-      <Tabs.Screen name="traits" options={{ title: 'Đặc điểm', tabBarIcon: tabIcon('gift') }} />
-      <Tabs.Screen name="settings" options={{ title: 'Cài đặt', tabBarIcon: tabIcon('settings') }} />
+    <Tabs
+      screenOptions={{ headerShown: false }}
+      tabBar={({ state, navigation }) => (
+        <TabBar active={state.routes[state.index].name} onSelect={(name: TabName) => {
+            // Chuyển tab → lấy lại dữ liệu đã cũ để thấy ngay thay đổi của người kia.
+            client.refetchQueries({ type: 'active', stale: true });
+            navigation.navigate(name);
+          }} />
+      )}>
+      <Tabs.Screen name="index" />
+      <Tabs.Screen name="journal" />
+      <Tabs.Screen name="create" />
+      <Tabs.Screen name="partner" />
+      <Tabs.Screen name="me" />
     </Tabs>
   );
 }
