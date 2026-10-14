@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
+import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useMe } from '@/features/account/api';
@@ -58,7 +59,7 @@ export default function NotesScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+    <KeyboardAvoidingView behavior="padding" style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={{ paddingTop: insets.top + 8, paddingHorizontal: 20 }}>
         <TopBar title={`Lời nhắn với ${partnerName}`} />
         <AppText variant="caption" color={colors.textMuted} style={{ marginLeft: 56 }}>Gửi kèm thông báo đến điện thoại {partnerName}</AppText>
@@ -86,7 +87,7 @@ export default function NotesScreen() {
         </View>
       </View>
       <DrawSheet visible={drawOpen} onClose={() => setDrawOpen(false)} partnerName={partnerName} />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
