@@ -48,6 +48,8 @@ export default function DayViewerScreen() {
   const prev = prevPos === pos ? null : prevPos;
   const next = nextPos === pos ? null : nextPos;
 
+  const keyOf = (p: Position) => `${items[p.item].id}-${p.photo}`;
+
   function renderCard(p: Position, interactive: boolean) {
     const cm = items[p.item];
     const cmedia = cm.media[p.photo];
@@ -91,8 +93,10 @@ export default function DayViewerScreen() {
       </View>
 
       <View style={{ marginTop: 10, alignItems: 'center' }}>
-        <SwipeDeck width={cardW} height={cardH} cardKey={`${pos.item}-${pos.photo}`}
-          card={renderCard(pos, true)} prevCard={prev ? renderCard(prev, false) : null} nextCard={next ? renderCard(next, false) : null}
+        <SwipeDeck width={cardW} height={cardH}
+          card={{ key: keyOf(pos), node: renderCard(pos, true) }}
+          prevCard={prev ? { key: keyOf(prev), node: renderCard(prev, false) } : null}
+          nextCard={next ? { key: keyOf(next), node: renderCard(next, false) } : null}
           onPrev={() => setPos(step(items, pos, -1))} onNext={() => setPos(step(items, pos, 1))} />
       </View>
 

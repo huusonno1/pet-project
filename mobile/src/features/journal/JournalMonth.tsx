@@ -10,7 +10,7 @@ import { AppText } from '@/ui/AppText';
 import { Card } from '@/ui/Card';
 import { Icon } from '@/ui/Icon';
 import { PhotoTile } from '@/ui/PhotoTile';
-import { colors, gradientFor } from '@/ui/theme';
+import { colors } from '@/ui/theme';
 
 import { countByDay, dayLabel, journalMoments } from './group';
 
@@ -47,25 +47,22 @@ export function JournalMonth({ moments, initial }: { moments: Moment[]; initial?
                   // Ngày đã có kỷ niệm → mở thẳng màn xem trong ngày.
                   if (n > 0) router.push(`/journal/${c.iso}`);
                 }}
-                style={{ alignItems: 'center', gap: 2 }}>
-                {/* Viền luôn có (chỉ đổi màu/kiểu): Android gỡ viền khỏi view bo góc + overflow hidden thì nội dung biến mất. */}
-                <View style={[styles.slot, gift && { backgroundColor: colors.peachSoft }, n > 0 && !cover && { backgroundColor: gradientFor(c.iso)[0] },
-                  { borderColor: on || c.iso === todayIso ? colors.roseStrong : 'transparent', borderStyle: c.iso === todayIso && !on ? 'dashed' : 'solid' }]}>
-                  {cover ? (
-                    <PhotoTile uri={cover.url} seed={c.iso} style={StyleSheet.absoluteFill} />
-                  ) : (
-                    <AppText variant={n ? 'bodyStrong' : 'body'} color={c.weekday === 6 && !n ? colors.roseStrong : colors.text}>{c.day}</AppText>
-                  )}
-                  {cover && n > 1 ? <View style={styles.badge}><AppText variant="micro" color={colors.white} style={{ letterSpacing: 0, fontSize: 10 }}>{n}</AppText></View> : null}
+                style={{ alignItems: 'center', gap: 3 }}>
+                {/* Mọi ô cùng cấu trúc: số luôn ở hàng trên (thẳng hàng), bên dưới là ảnh tròn / chấm / trống.
+                    Viền luôn có, chỉ đổi màu: Android gỡ viền khỏi view bo góc thì nội dung có thể biến mất. */}
+                <View style={[styles.num, gift && { backgroundColor: colors.peachSoft }, on && { backgroundColor: colors.roseStrong },
+                  { borderColor: c.iso === todayIso && !on ? colors.roseStrong : 'transparent', borderStyle: c.iso === todayIso && !on ? 'dashed' : 'solid' }]}>
+                  <AppText variant={n ? 'bodyStrong' : 'body'} style={{ fontSize: 14, lineHeight: 18 }}
+                    color={on ? colors.white : c.weekday === 6 ? colors.roseStrong : colors.text}>{c.day}</AppText>
                 </View>
-                {/* Ngày có ảnh: số nằm dưới ảnh thay vì đè lên ảnh. */}
-                {cover ? (
-                  <AppText variant="captionStrong" color={on ? colors.roseStrong : colors.text} style={{ fontSize: 12, lineHeight: 15 }}>{c.day}</AppText>
-                ) : n > 1 ? (
-                  <AppText variant="micro" style={{ letterSpacing: 0, lineHeight: 15 }}>{'•'.repeat(Math.min(n, 3))}</AppText>
-                ) : (
-                  <View style={{ height: 15 }} />
-                )}
+                <View style={styles.mark}>
+                  {cover ? (
+                    <PhotoTile uri={cover.url} seed={c.iso} style={styles.thumb} />
+                  ) : n > 0 ? (
+                    <View style={styles.dot} />
+                  ) : null}
+                  {cover && n > 1 ? <View style={styles.badge}><AppText variant="micro" color={colors.white} style={{ letterSpacing: 0, fontSize: 9, lineHeight: 11 }}>{n}</AppText></View> : null}
+                </View>
               </Pressable>
             </View>
           );
@@ -98,8 +95,11 @@ export function JournalMonth({ moments, initial }: { moments: Moment[]; initial?
 const styles = StyleSheet.create({
   arrow: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   cellW: { width: `${100 / 7}%`, textAlign: 'center', paddingBottom: 6 },
-  cell: { width: `${100 / 7}%`, height: 62, alignItems: 'center', justifyContent: 'center' },
-  slot: { width: 40, height: 40, borderRadius: 13, borderWidth: 2, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
-  badge: { position: 'absolute', right: 2, top: 2, minWidth: 15, height: 15, borderRadius: 8, paddingHorizontal: 3, backgroundColor: colors.roseStrong, alignItems: 'center', justifyContent: 'center' },
+  cell: { width: `${100 / 7}%`, height: 66, alignItems: 'center', justifyContent: 'center' },
+  num: { width: 30, height: 30, borderRadius: 15, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center' },
+  mark: { width: 28, height: 28, alignItems: 'center', justifyContent: 'center' },
+  thumb: { width: 28, height: 28, borderRadius: 14 },
+  dot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.rose },
+  badge: { position: 'absolute', right: -4, top: -3, minWidth: 14, height: 14, borderRadius: 7, paddingHorizontal: 3, backgroundColor: colors.roseStrong, alignItems: 'center', justifyContent: 'center' },
   empty: { padding: 16, borderRadius: 20, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.line, textAlign: 'center' },
 });
