@@ -47,6 +47,15 @@ export default function CycleScreen() {
     }
   }
 
+  if (me.data && me.data.gender !== 'FEMALE') {
+    return (
+      <Screen>
+        <TopBar title="Theo dõi chu kỳ" />
+        <AppText color={colors.textMuted}>Theo dõi chu kỳ chỉ dành cho tài khoản nữ. Bạn có thể đổi giới tính trong Thông tin cá nhân.</AppText>
+      </Screen>
+    );
+  }
+
   return (
     <Screen bottomPad={40}>
       <TopBar title="Theo dõi chu kỳ" />

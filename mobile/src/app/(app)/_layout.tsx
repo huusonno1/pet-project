@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 
 import { useCouple } from '@/features/couple/api';
+import { GenderPromptSheet } from '@/features/me/GenderPromptSheet';
 import { errorMessage } from '@/lib/api/client';
 import { useLiveSync } from '@/lib/use-live-sync';
 import { useOnboardingRedirect } from '@/lib/use-onboarding';
@@ -33,5 +34,10 @@ export default function AppLayout() {
       </Screen>
     );
   }
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <>
+      <Stack screenOptions={{ headerShown: false }} />
+      <GenderPromptSheet />
+    </>
+  );
 }

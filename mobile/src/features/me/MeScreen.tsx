@@ -69,8 +69,10 @@ export default function MeScreen() {
       <AppText variant="micro" color={colors.textMuted} style={{ marginTop: 4 }}>TÀI KHOẢN</AppText>
       <Card style={{ paddingVertical: 4, gap: 0 }}>
         <ListRow icon="user" iconBg={colors.roseSoft} iconColor={colors.rose} title="Thông tin cá nhân" subtitle="Tên, ID, sinh nhật, size & món bạn thích" onPress={() => router.push('/me/profile')} />
-        <ListRow icon="droplet" iconBg={colors.roseSoft} iconColor={colors.cycle} title="Theo dõi chu kỳ"
-          subtitle={s?.cycleTracking ? 'Tuỳ chọn · đang bật' : 'Tuỳ chọn · đang tắt'} onPress={() => router.push('/me/cycle')} />
+        {me.data?.gender === 'FEMALE' ? (
+          <ListRow icon="droplet" iconBg={colors.roseSoft} iconColor={colors.cycle} title="Theo dõi chu kỳ"
+            subtitle={s?.cycleTracking ? 'Tuỳ chọn · đang bật' : 'Tuỳ chọn · đang tắt'} onPress={() => router.push('/me/cycle')} />
+        ) : null}
       </Card>
 
       <AppText variant="micro" color={colors.textMuted} style={{ marginTop: 4 }}>QUYỀN RIÊNG TƯ & THÔNG BÁO</AppText>

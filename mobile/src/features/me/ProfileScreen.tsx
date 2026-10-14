@@ -1,18 +1,19 @@
+import * as Clipboard from 'expo-clipboard';
 import * as ImagePicker from 'expo-image-picker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, View } from 'react-native';
 
 import { useMe, useUpdateMe } from '@/features/account/api';
+import { GenderPicker } from '@/features/account/GenderPicker';
 import { useCouple } from '@/features/couple/api';
-import { normalizeHandle } from '@/features/couple/handle';
 import { uploadImage } from '@/features/media/upload';
 import { FavoriteSheet } from '@/features/partner/FavoriteSheet';
 import { SizeSheet } from '@/features/partner/SizeSheet';
 import { useCatalog, useTraits } from '@/features/traits/api';
 import { catalogLabel } from '@/features/traits/editing';
 import { errorMessage } from '@/lib/api/client';
-import type { Preference, SizeEntry } from '@/lib/api/types';
+import type { Gender, Preference, SizeEntry } from '@/lib/api/types';
 import { formatDate, toIsoDate } from '@/lib/format';
 import { AppText } from '@/ui/AppText';
 import { Avatar } from '@/ui/Avatar';
@@ -33,7 +34,7 @@ export default function ProfileScreen() {
   const traits = useTraits(me.data?.id);
   const catalog = useCatalog();
   const [name, setName] = useState('');
-  const [handle, setHandle] = useState('');
+  const [gender, setGender] = useState<Gender | null>(null);
   const [birthday, setBirthday] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [sizeSheet, setSizeSheet] = useState<{ entry: SizeEntry | null } | null>(null);
@@ -45,7 +46,7 @@ export default function ProfileScreen() {
   useEffect(() => {
     if (!me.data) return;
     setName(me.data.displayName);
-    setHandle(me.data.handle);
+    setGender(me.data.gender);
     setBirthday(me.data.birthday);
   }, [me.data]);
 
@@ -66,11 +67,9 @@ export default function ProfileScreen() {
 
   async function save() {
     if (!name.trim()) return setError('Nhập tên hiển thị');
-    const h = normalizeHandle(handle);
-    if (!/^[a-z0-9._]{3,30}$/.test(h)) return setError('ID chỉ gồm chữ thường, số, dấu chấm, gạch dưới (3–30 ký tự)');
     setError(null);
     try {
-      await update.mutateAsync({ displayName: name.trim(), handle: h, ...(birthday ? { birthday } : {}) });
+      await update.mutateAsync({ displayName: name.trim(), ...(birthday ? { birthday } : {}), ...(gender && gender !== me.data?.gender ? { gender } : {}) });
       router.back();
     } catch (e) {
       setError(errorMessage(e));
@@ -92,7 +91,20 @@ export default function ProfileScreen() {
         <AppText variant="captionStrong" color={colors.roseStrong}>{uploading ? 'Đang tải ảnh…' : 'Đổi ảnh đại diện'}</AppText>
       </View>
       <TextField label="Tên hiển thị" value={name} onChangeText={setName} />
-      <TextField label="ID của bạn" value={handle} onChangeText={setHandle} autoCapitalize="none" autoCorrect={false} />
+      {/* ID là định danh duy nhất, hệ thống tự sinh khi đăng ký — chỉ xem và sao chép. */}
+      <View style={{ gap: 6 }}>
+        <AppText variant="caption" color={colors.textMuted}>ID của bạn (không đổi được)</AppText>
+        <View style={{ height: 48, borderRadius: 16, backgroundColor: colors.surfaceMuted, paddingHorizontal: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <AppText variant="bodyStrong">@{me.data?.handle}</AppText>
+          <Pressable accessibilityRole="button" accessibilityLabel="Sao chép ID" hitSlop={8} onPress={() => me.data && Clipboard.setStringAsync(me.data.handle)}>
+            <Icon name="copy" size={18} color={colors.roseStrong} />
+          </Pressable>
+        </View>
+      </View>
+      <GenderPicker value={gender} onChange={setGender} />
+      {me.data?.gender === 'FEMALE' && gender === 'MALE' ? (
+        <AppText variant="caption" color={colors.textMuted}>Đổi sang Nam sẽ tắt theo dõi chu kỳ (dữ liệu cũ vẫn được giữ).</AppText>
+      ) : null}
       <View style={{ gap: 6 }}>
         <AppText variant="caption" color={colors.textMuted}>Sinh nhật</AppText>
         <Pressable accessibilityRole="button" accessibilityLabel={`Sinh nhật ${birthday ? formatDate(birthday) : 'chưa có'}, chạm để đổi`} onPress={() => setPickerOpen(true)}

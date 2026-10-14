@@ -1,5 +1,7 @@
 export type TokenResponse = { accessToken: string; refreshToken: string; expiresIn: number };
 
+export type Gender = 'MALE' | 'FEMALE';
+
 export type Me = {
   id: string;
   email: string;
@@ -8,6 +10,7 @@ export type Me = {
   birthday: string | null;
   timezone: string;
   avatarUrl: string | null;
+  gender: Gender | null;
 };
 
 export type Settings = {
@@ -19,7 +22,14 @@ export type Settings = {
   cycleTracking: boolean;
 };
 
-export type Partner = { id: string; displayName: string; handle: string; birthday: string | null; avatarUrl: string | null };
+export type Partner = {
+  id: string;
+  displayName: string;
+  handle: string;
+  birthday: string | null;
+  avatarUrl: string | null;
+  gender: Gender | null;
+};
 export type Couple = { id: string; startedDatingOn: string | null; createdAt: string; partner: Partner };
 export type Invite = { code: string; expiresAt: string };
 
@@ -154,6 +164,6 @@ export type InboxItem = {
   createdAt: string;
 };
 
-export type UserCard = { id: string; displayName: string; handle: string; avatarUrl: string | null };
+export type UserCard = { id: string; displayName: string; handle: string; avatarUrl: string | null; gender: Gender | null };
 export type PairRequest = { id: string; user: UserCard; createdAt: string; expiresAt: string };
 export type PairRequests = { incoming: PairRequest[]; outgoing: PairRequest[] };
