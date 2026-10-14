@@ -1,5 +1,6 @@
 package com.coupleapp.couple;
 
+import com.coupleapp.user.Gender;
 import com.coupleapp.user.UserDtos.UserCard;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.PastOrPresent;
@@ -17,7 +18,8 @@ public final class CoupleDtos {
 
     public record JoinRequest(@NotBlank @Size(max = 20) String code, @PastOrPresent LocalDate startedDatingOn) {}
 
-    public record PartnerDto(UUID id, String displayName, String handle, LocalDate birthday, String avatarUrl) {}
+    public record PartnerDto(
+            UUID id, String displayName, String handle, LocalDate birthday, String avatarUrl, Gender gender) {}
 
     public record CoupleResponse(UUID id, LocalDate startedDatingOn, Instant createdAt, PartnerDto partner) {}
 

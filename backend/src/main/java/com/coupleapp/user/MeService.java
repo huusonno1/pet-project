@@ -15,7 +15,6 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,17 +41,6 @@ public class MeService {
         if (r.displayName() != null) {
             u.setDisplayName(r.displayName().trim());
         }
-        if (r.handle() != null) {
-            String h = Handles.normalize(r.handle());
-            if (!Handles.VALID.matcher(h).matches()) {
-                throw new ApiException(ErrorCode.VALIDATION_FAILED,
-                        "ID chỉ gồm chữ thường, số, dấu chấm, gạch dưới (3–30 ký tự)");
-            }
-            if (!h.equalsIgnoreCase(u.getHandle()) && users.existsByHandleIgnoreCase(h)) {
-                throw handleTaken();
-            }
-            u.setHandle(h);
-        }
         if (r.birthday() != null) {
             u.setBirthday(r.birthday());
         }
@@ -68,12 +56,13 @@ public class MeService {
             media.requireAvatar(userId, r.avatarMediaId());
             u.setAvatarMediaId(r.avatarMediaId());
         }
-        u.setUpdatedAt(clock.instant());
-        try {
-            users.flush();
-        } catch (DataIntegrityViolationException e) {
-            throw handleTaken();
+        if (r.gender() != null && r.gender() != u.getGender()) {
+            u.setGender(r.gender());
+            if (r.gender() != Gender.FEMALE) {
+                stopCycleTracking(userId); // dữ liệu chu kỳ vẫn giữ, đổi lại Nữ thì bật lại được
+            }
         }
+        u.setUpdatedAt(clock.instant());
         return toResponse(u);
     }
 
@@ -98,6 +87,9 @@ public class MeService {
             s.setDiscoverable(r.discoverable());
         }
         if (r.cycleTracking() != null) {
+            if (r.cycleTracking() && load(userId).getGender() != Gender.FEMALE) {
+                throw new ApiException(ErrorCode.VALIDATION_FAILED, "Chỉ tài khoản nữ mới theo dõi chu kỳ");
+            }
             s.setCycleTracking(r.cycleTracking());
         }
         if (r.notifyPrefs() != null) {
@@ -116,6 +108,15 @@ public class MeService {
         return toResponse(s);
     }
 
+    private void stopCycleTracking(UUID userId) {
+        settings.findById(userId).filter(UserSettings::isCycleTracking).ifPresent(s -> {
+            s.setCycleTracking(false);
+            settings.save(s);
+            events.publishEvent(new UserSettingsChangedEvent(
+                    userId, s.isShareLocation(), s.isShareCycle(), false, false, true));
+        });
+    }
+
     User load(UUID userId) {
         return users.findById(userId).orElseThrow(ApiException::notFound);
     }
@@ -123,16 +124,12 @@ public class MeService {
     MeResponse toResponse(User u) {
         String avatarUrl = u.getAvatarMediaId() == null ? null : media.avatarUrl(u.getAvatarMediaId()).orElse(null);
         return new MeResponse(u.getId(), u.getEmail(), u.getDisplayName(), u.getHandle(), u.getBirthday(),
-                u.getTimezone(), avatarUrl);
+                u.getTimezone(), avatarUrl, u.getGender());
     }
 
     private static SettingsResponse toResponse(UserSettings s) {
         return new SettingsResponse(
                 s.isShareLocation(), s.isShareCycle(), s.getCycleLengthDefault(), Map.copyOf(s.getNotifyPrefs()),
                 s.isDiscoverable(), s.isCycleTracking());
-    }
-
-    private static ApiException handleTaken() {
-        return new ApiException(ErrorCode.HANDLE_TAKEN, "ID này đã có người dùng");
     }
 }

@@ -1,6 +1,8 @@
 package com.coupleapp.user;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -30,6 +32,9 @@ public class User {
     private String handle;
     private UUID avatarMediaId;
     private LocalDate birthday;
+
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
     private String timezone = "Asia/Ho_Chi_Minh";
     private Instant createdAt = Instant.now();
     private Instant updatedAt = Instant.now();

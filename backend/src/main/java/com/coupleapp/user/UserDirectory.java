@@ -42,6 +42,6 @@ public class UserDirectory {
 
     UserCard card(User u) {
         String avatar = u.getAvatarMediaId() == null ? null : media.avatarUrl(u.getAvatarMediaId()).orElse(null);
-        return new UserCard(u.getId(), u.getDisplayName(), u.getHandle(), avatar);
+        return new UserCard(u.getId(), u.getDisplayName(), u.getHandle(), avatar, u.getGender());
     }
 }

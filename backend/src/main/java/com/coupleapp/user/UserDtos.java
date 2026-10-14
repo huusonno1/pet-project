@@ -12,14 +12,14 @@ public final class UserDtos {
 
     public record MeResponse(
             UUID id, String email, String displayName, String handle, LocalDate birthday, String timezone,
-            String avatarUrl) {}
+            String avatarUrl, Gender gender) {}
 
     public record UpdateMeRequest(
             @Size(min = 1, max = 50) String displayName,
-            @Size(max = 40) String handle,
             @Past LocalDate birthday,
             @Size(max = 64) String timezone,
-            UUID avatarMediaId) {}
+            UUID avatarMediaId,
+            Gender gender) {}
 
     public record SettingsResponse(
             boolean shareLocation, boolean shareCycle, int cycleLengthDefault, Map<String, Boolean> notifyPrefs,
@@ -29,5 +29,5 @@ public final class UserDtos {
             Boolean shareLocation, Boolean shareCycle, Map<String, Boolean> notifyPrefs,
             Boolean discoverable, Boolean cycleTracking) {}
 
-    public record UserCard(UUID id, String displayName, String handle, String avatarUrl) {}
+    public record UserCard(UUID id, String displayName, String handle, String avatarUrl, Gender gender) {}
 }

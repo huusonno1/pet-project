@@ -103,7 +103,7 @@ public class CoupleService {
         UserCard card = directory.card(partnerId);
         LocalDate birthday = directory.find(partnerId).map(User::getBirthday).orElse(null);
         return new CoupleResponse(couple.getId(), couple.getStartedDatingOn(), couple.getCreatedAt(),
-                new PartnerDto(card.id(), card.displayName(), card.handle(), birthday, card.avatarUrl()));
+                new PartnerDto(card.id(), card.displayName(), card.handle(), birthday, card.avatarUrl(), card.gender()));
     }
 
     private static ApiException invalidInvite() {

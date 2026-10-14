@@ -41,6 +41,7 @@ public class AuthService {
         u.setPasswordHash(passwords.encode(r.password()));
         u.setDisplayName(r.displayName().trim());
         u.setHandle(handles.generate(u.getDisplayName()));
+        u.setGender(r.gender());
         try {
             users.saveAndFlush(u);
         } catch (DataIntegrityViolationException e) {

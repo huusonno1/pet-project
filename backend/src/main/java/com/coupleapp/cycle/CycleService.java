@@ -13,6 +13,7 @@ import com.coupleapp.moment.MomentRepository;
 import com.coupleapp.moment.MomentService;
 import com.coupleapp.moment.MomentType;
 import com.coupleapp.moment.reminder.ReminderScheduler;
+import com.coupleapp.user.Gender;
 import com.coupleapp.user.User;
 import com.coupleapp.user.UserRepository;
 import com.coupleapp.user.UserSettings;
@@ -43,7 +44,7 @@ public class CycleService {
 
     @Transactional
     public CycleLogDto addLog(UUID userId, CycleLogRequest r) {
-        if (!settingsOf(userId).isCycleTracking()) {
+        if (!tracking(userId)) {
             throw invalid("Hãy bật theo dõi chu kỳ trước");
         }
         if (r.periodStart().isAfter(today(userId))) {
@@ -83,7 +84,7 @@ public class CycleService {
         if (!viewer.equals(subject)) {
             couples.findActive(viewer).filter(c -> c.partnerId().equals(subject)).orElseThrow(ApiException::notFound);
             UserSettings s = settingsOf(subject);
-            if (!s.isCycleTracking() || !s.isShareCycle()) {
+            if (!tracking(subject) || !s.isShareCycle()) {
                 throw ApiException.notFound();
             }
         }
@@ -109,7 +110,7 @@ public class CycleService {
         }
         Optional<Moment> existing =
                 moments.findFirstByCoupleIdAndTypeAndSubjectUserId(c.get().coupleId(), MomentType.CYCLE, userId);
-        if (!settingsOf(userId).isCycleTracking()) {
+        if (!tracking(userId)) {
             existing.ifPresent(moments::delete); // reminders xoá theo ON DELETE CASCADE
             return;
         }
@@ -148,6 +149,12 @@ public class CycleService {
         List<LocalDate> starts = logs.findByUserIdOrderByPeriodStartDesc(userId).stream()
                 .map(CycleLog::getPeriodStart).toList();
         return CyclePredictor.predict(starts, settingsOf(userId).getCycleLengthDefault(), today(userId));
+    }
+
+    /** Đang theo dõi chu kỳ = đã bật và là tài khoản nữ (tài khoản cũ chưa chọn giới tính coi như chưa bật). */
+    private boolean tracking(UUID userId) {
+        return settingsOf(userId).isCycleTracking()
+                && users.findById(userId).map(u -> u.getGender() == Gender.FEMALE).orElse(false);
     }
 
     private UserSettings settingsOf(UUID userId) {

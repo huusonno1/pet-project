@@ -82,17 +82,24 @@ class MeTest extends IntegrationTest {
     }
 
     @Test
-    void handleCanBeChangedAndIsUniqueIgnoringCase() throws Exception {
+    void handleCannotBeChanged() throws Exception {
         String lan = register("lan.h@x.vn", "Lan");
-        String minh = register("minh.h@x.vn", "Minh");
-        patch("/api/me", lan, Map.of("handle", "@Lan.2001"))
+        String handle = read(get("/api/me", lan).andExpect(status().isOk())).get("handle").asText();
+        patch("/api/me", lan, Map.of("handle", "lan.2001", "displayName", "Lan Anh"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.handle").value("lan.2001"));
-        patch("/api/me", minh, Map.of("handle", "LAN.2001"))
-                .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.code").value("HANDLE_TAKEN"));
-        patch("/api/me", minh, Map.of("handle", "ab")).andExpect(status().isBadRequest());
-        patch("/api/me", lan, Map.of("handle", "lan.2001")).andExpect(status().isOk());
+                .andExpect(jsonPath("$.handle").value(handle));
+    }
+
+    @Test
+    void maleAccountCannotTrackCycleAndSwitchingToMaleStopsTracking() throws Exception {
+        String minh = register("minh.g@x.vn", "Minh", "MALE");
+        put("/api/me/settings", minh, Map.of("cycleTracking", true)).andExpect(status().isBadRequest());
+        String lan = register("lan.g@x.vn", "Lan");
+        enableCycleTracking(lan);
+        patch("/api/me", lan, Map.of("gender", "MALE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.gender").value("MALE"));
+        get("/api/me/settings", lan).andExpect(jsonPath("$.cycleTracking").value(false));
     }
 
     @Test
