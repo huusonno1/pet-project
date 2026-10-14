@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Kỷ niệm mới</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FFF8F3; font-family: 'Be Vietnam Pro', sans-serif; color: #2B1A2E;">
+  <div style="position: absolute; left: 20px; top: 52px; width: 350px; display: flex; align-items: center; justify-content: space-between;">
+    <a href="C3-Phan-loai.dc.html" aria-label="Đóng" style="width: 44px; height: 44px; box-sizing: border-box; border-radius: 22px; border: 1px solid #EADFD9; background: #FFFFFF; color: #2B1A2E; display: flex; align-items: center; justify-content: center;"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"></path></svg></a>
+    <h1 style="margin: 0; font-size: 18px; font-weight: 700;">Kỷ niệm mới</h1>
+    <a href="C7-Chi-tiet.dc.html" style="font-size: 15px; font-weight: 700; color: #C9365C; text-decoration: none; padding: 10px 4px;">Lưu</a>
+  </div>
+
+  <div style="position: absolute; left: 24px; top: 112px; width: 342px; display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; gap: 10px;">
+      <div role="img" aria-label="Ảnh đã chụp, hiệu ứng tim bay" style="position: relative; width: 110px; height: 130px; border-radius: 20px; background: linear-gradient(140deg, #FFC1CF, #F7859F);">
+        <span style="position: absolute; left: 8px; bottom: 8px; padding: 4px 8px; border-radius: 999px; background: #FFFFFF; font-size: 11px; font-weight: 700;">TIM BAY</span>
+      </div>
+      <button type="button" style="font: inherit; width: 96px; height: 130px; border-radius: 20px; border: 1.5px dashed #E9557A; background: #FFE6EC; color: #C9365C; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+        <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"></path><circle cx="12" cy="13" r="3"></circle></svg>
+        Thêm ảnh
+      </button>
+    </div>
+
+    <label for="m-title" style="padding: 14px 16px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 8px 24px rgba(43,26,46,0.06); display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #6F5B6A;">TIÊU ĐỀ
+      <input id="m-title" value="Valentine đầu tiên" style="font: inherit; border: 0; padding: 0; background: none; outline: none; font-size: 21px; font-weight: 700; letter-spacing: 0; color: #2B1A2E;">
+    </label>
+
+    <div role="radiogroup" aria-label="Loại" style="display: flex; gap: 8px;">
+      <sc-for list="{{types}}" as="t" hint-placeholder-count="4">
+        <button type="button" role="radio" aria-checked="{{t.checked}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+      </sc-for>
+    </div>
+
+    <div style="padding: 4px 16px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 8px 24px rgba(43,26,46,0.06); display: flex; flex-direction: column;">
+      <a href="C6-Ngay-gio.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F3EAE5; color: #2B1A2E; text-decoration: none;">
+        <span style="width: 36px; height: 36px; border-radius: 18px; background: #EEEAFF; color: #5B4BC4; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg></span>
+        <span style="display: flex; flex-direction: column; flex-grow: 1;"><span style="font-size: 15px; font-weight: 700;">Ngày</span><span style="font-size: 13px; color: #6F5B6A;">14/02/2026 · 19:00</span></span>
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6F5B6A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </a>
+      <button type="button" style="font: inherit; display: flex; align-items: center; gap: 12px; padding: 12px 0; border: 0; border-bottom: 1px solid #F3EAE5; background: none; color: #2B1A2E; text-align: left; cursor: pointer;">
+        <span style="width: 36px; height: 36px; border-radius: 18px; background: #E3F5EC; color: #24795A; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></span>
+        <span style="display: flex; flex-direction: column; flex-grow: 1;"><span style="font-size: 15px; font-weight: 700;">Địa điểm</span><span style="font-size: 13px; color: #6F5B6A;">Nhà hàng Ý, Hoàn Kiếm</span></span>
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6F5B6A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </button>
+      <a href="C5-Lap-lai.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #F3EAE5; color: #2B1A2E; text-decoration: none;">
+        <span style="width: 36px; height: 36px; border-radius: 18px; background: #FFEEDF; color: #B5562A; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4M3 11v-1a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v1a4 4 0 0 1-4 4H3"></path></svg></span>
+        <span style="display: flex; flex-direction: column; flex-grow: 1;"><span style="font-size: 15px; font-weight: 700;">Lặp lại</span><span style="font-size: 13px; color: #6F5B6A;">Hằng năm · 14/02</span></span>
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6F5B6A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </a>
+      <a href="C8-Nhac-nho.dc.html" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; color: #2B1A2E; text-decoration: none;">
+        <span style="width: 36px; height: 36px; border-radius: 18px; background: #FFE6EC; color: #E9557A; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"></path></svg></span>
+        <span style="display: flex; flex-direction: column; flex-grow: 1;"><span style="font-size: 15px; font-weight: 700;">Nhắc nhở</span><span style="font-size: 13px; color: #6F5B6A;">Trước 3 ngày · cả hai</span></span>
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6F5B6A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
+      </a>
+    </div>
+
+    <label for="m-note" style="padding: 14px 16px; border-radius: 24px; background: #FFFFFF; box-shadow: 0 8px 24px rgba(43,26,46,0.06); display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #6F5B6A;">LỜI NHẮN
+      <textarea id="m-note" rows="2" style="font: inherit; resize: none; border: 0; padding: 0; background: none; outline: none; font-size: 15px; font-weight: 400; letter-spacing: 0; line-height: 1.45; color: #2B1A2E;">Lần đầu tặng anh socola tự làm…</textarea>
+    </label>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { type: 'Kỷ niệm' };
+  }
+  renderVals() {
+    const types = ['Kỷ niệm', 'Lịch hẹn', 'Tặng quà', 'Khác'].map((label) => {
+      const on = this.state.type === label;
+      return {
+        label,
+        checked: on ? 'true' : 'false',
+        pick: () => this.setState({ type: label }),
+        style: 'font: inherit; height: 36px; padding: 0 14px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600; ' +
+          (on ? 'border: 1.5px solid #C9365C; background: #C9365C; color: #FFFFFF;' : 'border: 1.5px solid #EADFD9; background: #FFFFFF; color: #2B1A2E;'),
+      };
+    });
+    return { types };
+  }
+}
+</script>
+</body>
+</html>

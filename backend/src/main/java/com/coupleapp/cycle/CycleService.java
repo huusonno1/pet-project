@@ -13,6 +13,7 @@ import com.coupleapp.moment.MomentRepository;
 import com.coupleapp.moment.MomentService;
 import com.coupleapp.moment.MomentType;
 import com.coupleapp.moment.reminder.ReminderScheduler;
+import com.coupleapp.user.Gender;
 import com.coupleapp.user.User;
 import com.coupleapp.user.UserRepository;
 import com.coupleapp.user.UserSettings;
@@ -43,6 +44,9 @@ public class CycleService {
 
     @Transactional
     public CycleLogDto addLog(UUID userId, CycleLogRequest r) {
+        if (!tracking(userId)) {
+            throw invalid("Hãy bật theo dõi chu kỳ trước");
+        }
         if (r.periodStart().isAfter(today(userId))) {
             throw invalid("Ngày bắt đầu không được ở tương lai");
         }
@@ -79,7 +83,8 @@ public class CycleService {
     public PredictionResponse prediction(UUID viewer, UUID subject) {
         if (!viewer.equals(subject)) {
             couples.findActive(viewer).filter(c -> c.partnerId().equals(subject)).orElseThrow(ApiException::notFound);
-            if (!settingsOf(subject).isShareCycle()) {
+            UserSettings s = settingsOf(subject);
+            if (!tracking(subject) || !s.isShareCycle()) {
                 throw ApiException.notFound();
             }
         }
@@ -105,6 +110,10 @@ public class CycleService {
         }
         Optional<Moment> existing =
                 moments.findFirstByCoupleIdAndTypeAndSubjectUserId(c.get().coupleId(), MomentType.CYCLE, userId);
+        if (!tracking(userId)) {
+            existing.ifPresent(moments::delete); // reminders xoá theo ON DELETE CASCADE
+            return;
+        }
         Optional<Prediction> p = predict(userId);
         if (p.isEmpty()) {
             existing.ifPresent(moments::delete);
@@ -140,6 +149,12 @@ public class CycleService {
         List<LocalDate> starts = logs.findByUserIdOrderByPeriodStartDesc(userId).stream()
                 .map(CycleLog::getPeriodStart).toList();
         return CyclePredictor.predict(starts, settingsOf(userId).getCycleLengthDefault(), today(userId));
+    }
+
+    /** Đang theo dõi chu kỳ = đã bật và là tài khoản nữ (tài khoản cũ chưa chọn giới tính coi như chưa bật). */
+    private boolean tracking(UUID userId) {
+        return settingsOf(userId).isCycleTracking()
+                && users.findById(userId).map(u -> u.getGender() == Gender.FEMALE).orElse(false);
     }
 
     private UserSettings settingsOf(UUID userId) {

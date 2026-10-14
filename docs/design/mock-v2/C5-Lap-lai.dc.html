@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Popup lặp lại</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #FFF8F3; font-family: 'Be Vietnam Pro', sans-serif; color: #2B1A2E;">
+  <dc-import name="C4-Form" hint-size="390px,844px"></dc-import>
+  <a href="C4-Form.dc.html" aria-label="Đóng" style="position: absolute; left: 0; top: 0; width: 390px; height: 844px; background: rgba(43,26,46,0.45);"></a>
+
+  <section aria-label="Lặp lại" style="position: absolute; left: 0; bottom: 0; width: 390px; box-sizing: border-box; padding: 12px 24px 34px; background: #FFF8F3; border-radius: 32px 32px 0 0; display: flex; flex-direction: column; gap: 10px;">
+    <div aria-hidden="true" style="width: 40px; height: 5px; border-radius: 3px; background: #EADFD9; align-self: center;"></div>
+    <h2 style="margin: 0 0 4px; font-size: 21px; font-weight: 700;">Lặp lại</h2>
+    <div role="radiogroup" aria-label="Kiểu lặp lại" style="display: flex; flex-direction: column; gap: 10px;">
+      <sc-for list="{{opts}}" as="o" hint-placeholder-count="5">
+        <button type="button" role="radio" aria-checked="{{o.checked}}" onClick="{{o.pick}}" style="{{o.rowStyle}}">
+          <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; text-align: left;">
+            <span style="font-size: 15px; font-weight: 700;">{{o.title}}</span>
+            <span style="font-size: 13px; color: #6F5B6A;">{{o.sub}}</span>
+          </span>
+          <span aria-hidden="true" style="{{o.radioStyle}}">
+            <sc-if value="{{o.on}}" hint-placeholder-val="{{false}}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+            </sc-if>
+          </span>
+        </button>
+      </sc-for>
+    </div>
+    <div role="group" aria-label="Chọn thứ (khi lặp hằng tuần)" style="{{weekStyle}}">
+      <sc-for list="{{days}}" as="d" hint-placeholder-count="7">
+        <button type="button" aria-pressed="{{d.pressed}}" onClick="{{d.pick}}" disabled="{{d.disabled}}" style="{{d.style}}">{{d.label}}</button>
+      </sc-for>
+    </div>
+    <a href="C4-Form.dc.html" style="margin-top: 4px; height: 54px; border-radius: 18px; background: #C9365C; color: #FFFFFF; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; text-decoration: none;">Xong</a>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { pick: 'Hằng năm', day: 'T6' };
+  }
+  renderVals() {
+    const list = [
+      ['Không lặp lại', 'Chỉ nhắc một lần'],
+      ['Hằng tuần', 'Mỗi ' + (this.state.day === 'CN' ? 'Chủ nhật' : 'Thứ ' + ({ T2: 'Hai', T3: 'Ba', T4: 'Tư', T5: 'Năm', T6: 'Sáu', T7: 'Bảy' })[this.state.day])],
+      ['Hằng tháng', 'Ngày 14 mỗi tháng'],
+      ['Hằng năm', '14/02 mỗi năm'],
+      ['Theo mốc ngày yêu', '100 · 200 · 500 · 1000 ngày…'],
+    ];
+    const opts = list.map(([title, sub]) => {
+      const on = this.state.pick === title;
+      return {
+        title, sub, on,
+        checked: on ? 'true' : 'false',
+        pick: () => this.setState({ pick: title }),
+        rowStyle: 'font: inherit; display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 18px; cursor: pointer; color: #2B1A2E; ' +
+          (on ? 'background: #FFE6EC; border: 1.5px solid #E9557A;' : 'background: #FFFFFF; border: 1.5px solid transparent;'),
+        radioStyle: 'width: 22px; height: 22px; box-sizing: border-box; border-radius: 11px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; ' +
+          (on ? 'background: #C9365C; border: 2px solid #C9365C;' : 'background: transparent; border: 2px solid #D9CCC6;'),
+      };
+    });
+    const weekly = this.state.pick === 'Hằng tuần';
+    const days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((label) => {
+      const on = this.state.day === label;
+      return {
+        label,
+        pressed: on ? 'true' : 'false',
+        disabled: !weekly,
+        pick: () => this.setState({ day: label }),
+        style: 'font: inherit; height: 38px; border-radius: 12px; border: 0; font-size: 13px; font-weight: 600; cursor: pointer; ' +
+          (on ? 'background: #C9365C; color: #FFFFFF;' : 'background: #FFFFFF; color: #2B1A2E;'),
+      };
+    });
+    return {
+      opts, days,
+      weekStyle: 'display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; opacity: ' + (weekly ? '1' : '0.4') + ';',
+    };
+  }
+}
+</script>
+</body>
+</html>

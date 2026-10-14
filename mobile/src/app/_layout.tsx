@@ -1,6 +1,16 @@
+import {
+  BeVietnamPro_400Regular,
+  BeVietnamPro_500Medium,
+  BeVietnamPro_600SemiBold,
+  BeVietnamPro_700Bold,
+  BeVietnamPro_800ExtraBold,
+  useFonts,
+} from '@expo-google-fonts/be-vietnam-pro';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { useEffect, useState } from 'react';
 
 import { SessionProvider, useSession } from '@/lib/auth/session';
@@ -11,26 +21,35 @@ SplashScreen.preventAutoHideAsync();
 export default function RootLayout() {
   const [queryClient] = useState(createQueryClient);
   return (
-    <QueryClientProvider client={queryClient}>
-      <SessionProvider>
-        <RootNavigator />
-      </SessionProvider>
-    </QueryClientProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <KeyboardProvider>
+        <QueryClientProvider client={queryClient}>
+          <SessionProvider>
+            <RootNavigator />
+          </SessionProvider>
+        </QueryClientProvider>
+      </KeyboardProvider>
+    </GestureHandlerRootView>
   );
 }
 
 function RootNavigator() {
   const { status } = useSession();
 
-  useEffect(() => {
-    if (status !== 'loading') {
-      SplashScreen.hideAsync();
-    }
-  }, [status]);
+  const [fontsLoaded] = useFonts({
+    BeVietnamPro_400Regular,
+    BeVietnamPro_500Medium,
+    BeVietnamPro_600SemiBold,
+    BeVietnamPro_700Bold,
+    BeVietnamPro_800ExtraBold,
+  });
+  const ready = status !== 'loading' && fontsLoaded;
 
-  if (status === 'loading') {
-    return null;
-  }
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
+
+  if (!ready) return null;
   const signedIn = status === 'signedIn';
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -38,8 +57,7 @@ function RootNavigator() {
         <Stack.Screen name="(app)" />
       </Stack.Protected>
       <Stack.Protected guard={!signedIn}>
-        <Stack.Screen name="sign-in" />
-        <Stack.Screen name="sign-up" />
+        <Stack.Screen name="(auth)" />
       </Stack.Protected>
     </Stack>
   );

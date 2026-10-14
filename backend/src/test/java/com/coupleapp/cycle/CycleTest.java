@@ -28,6 +28,8 @@ class CycleTest extends IntegrationTest {
         minh = register("minh@x.vn", "Minh");
         lanId = userId(lan);
         minhId = userId(minh);
+        enableCycleTracking(lan);
+        enableCycleTracking(minh);
     }
 
     static LocalDate today() {

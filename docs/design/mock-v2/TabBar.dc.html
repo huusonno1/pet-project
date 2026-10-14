@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Tab bar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<style>body{margin:0}</style>
+</helmet>
+<nav aria-label="Điều hướng chính" style="width: 390px; height: 96px; box-sizing: border-box; padding: 10px 12px 26px; background: #FFFFFF; border-top: 1px solid #EADFD9; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; font-family: 'Be Vietnam Pro', sans-serif; color: #2B1A2E;">
+  <a href="{{homeHref}}" aria-current="{{cur.home}}" style="{{st.home}}">
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>
+    Trang chủ
+  </a>
+  <a href="D1-Nhat-ky.dc.html" aria-current="{{cur.journal}}" style="{{st.journal}}">
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5a2 2 0 0 1 2-2h14v16H6.5A2.5 2.5 0 0 0 4 21.5 2.5 2.5 0 0 1 6.5 19H20"></path></svg>
+    Nhật ký
+  </a>
+  <a href="C1-Camera.dc.html" aria-label="Tạo mới" aria-current="{{cur.create}}" style="{{st.create}}">
+    <svg aria-hidden="true" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+  </a>
+  <a href="E1-Nguoi-ay.dc.html" aria-current="{{cur.partner}}" style="{{st.partner}}">
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.5-1.5 3-3.2 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.8 0-3 .5-4.5 2-1.5-1.5-2.7-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4 3 5.5l7 7z"></path></svg>
+    Người ấy
+  </a>
+  <a href="F1-Toi.dc.html" aria-current="{{cur.me}}" style="{{st.me}}">
+    <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>
+    Tôi
+  </a>
+</nav>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"active":{"editor":"enum","options":["home","journal","create","partner","me"],"default":"home"},"homeHref":{"editor":"text","default":"B1-Trang-chu.dc.html"},"$preview":{"width":390,"height":96}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const active = this.props.active ?? 'home';
+    const tab = (on) => 'display: flex; flex-direction: column; align-items: center; gap: 4px; text-decoration: none; font-size: 11px; font-weight: ' + (on ? '700' : '600') + '; color: ' + (on ? '#C9365C' : '#6F5B6A') + ';';
+    const keys = ['home', 'journal', 'partner', 'me'];
+    const st = {};
+    const cur = {};
+    keys.forEach((k) => { st[k] = tab(active === k); cur[k] = active === k ? 'page' : 'false'; });
+    const c = active === 'create';
+    st.create = 'justify-self: center; width: 54px; height: 54px; border-radius: 27px; display: flex; align-items: center; justify-content: center; color: #FFFFFF; background: ' + (c ? '#2B1A2E' : '#C9365C') + '; box-shadow: 0 6px 16px rgba(201,54,92,0.35);';
+    cur.create = c ? 'page' : 'false';
+    return { st, cur, homeHref: this.props.homeHref ?? 'B1-Trang-chu.dc.html' };
+  }
+}
+</script>
+</body>
+</html>

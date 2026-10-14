@@ -1,5 +1,6 @@
 package com.coupleapp.trait;
 
+import com.coupleapp.media.MediaDtos.MediaDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -43,7 +44,8 @@ public final class TraitDtos {
             @Size(max = 50) String color,
             @Size(max = 1000) String note,
             Visibility visibility,
-            @Valid @Size(max = 10) List<LinkInput> links) {}
+            @Valid @Size(max = 10) List<LinkInput> links,
+            UUID imageMediaId) {}
 
     public record PreferencePatch(
             @Pattern(regexp = CODE) String category,
@@ -52,7 +54,8 @@ public final class TraitDtos {
             @Size(max = 50) String color,
             @Size(max = 1000) String note,
             Visibility visibility,
-            @Valid @Size(max = 10) List<LinkInput> links) {}
+            @Valid @Size(max = 10) List<LinkInput> links,
+            UUID imageMediaId) {}
 
     public record SizeDto(UUID id, UUID subjectUserId, String kind, String value, String note,
                           Visibility visibility, UUID createdBy, Instant updatedAt) {}
@@ -61,7 +64,7 @@ public final class TraitDtos {
 
     public record PreferenceDto(UUID id, UUID subjectUserId, String category, String brand, String name,
                                 String color, String note, Visibility visibility, UUID createdBy,
-                                Instant updatedAt, List<LinkDto> links) {}
+                                Instant updatedAt, List<LinkDto> links, MediaDto image) {}
 
     public record TraitsResponse(List<SizeDto> sizes, List<PreferenceDto> preferences) {}
 

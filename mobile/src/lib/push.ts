@@ -61,8 +61,10 @@ export function routeForDeepLink(url: unknown): string | null {
   if (typeof url !== 'string' || !url.startsWith('coupleapp://')) return null;
   const path = url.slice('coupleapp://'.length);
   if (path === '' || path === 'home') return '/';
+  if (path === 'notes') return '/notes';
+  if (path === 'pair/requests') return '/pair/requests';
   const moment = /^moments\/([\w-]+)$/.exec(path);
   if (moment) return `/moments/${moment[1]}`;
-  if (/^traits\/[\w-]+$/.test(path)) return '/traits';
+  if (/^traits\/[\w-]+$/.test(path)) return '/partner';
   return null;
 }

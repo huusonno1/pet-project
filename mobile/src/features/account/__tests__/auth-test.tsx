@@ -73,7 +73,7 @@ describe('session & auth screens', () => {
     await fireEvent.changeText(screen.getByLabelText('Tên hiển thị'), 'Lan');
     await fireEvent.changeText(screen.getByLabelText('Email'), 'lan@x.vn');
     await fireEvent.changeText(screen.getByLabelText('Mật khẩu'), 'short');
-    await fireEvent.changeText(screen.getByLabelText('Nhập lại mật khẩu'), 'short');
+    await fireEvent.press(screen.getByText('Nữ'));
     await fireEvent.press(screen.getByRole('button', { name: 'Tạo tài khoản' }));
 
     expect(screen.getByText('Mật khẩu tối thiểu 8 ký tự')).toBeOnTheScreen();
@@ -93,11 +93,11 @@ describe('session & auth screens', () => {
     await fireEvent.changeText(screen.getByLabelText('Tên hiển thị'), 'Lan');
     await fireEvent.changeText(screen.getByLabelText('Email'), 'lan@x.vn');
     await fireEvent.changeText(screen.getByLabelText('Mật khẩu'), 'password123');
-    await fireEvent.changeText(screen.getByLabelText('Nhập lại mật khẩu'), 'password123');
+    await fireEvent.press(screen.getByText('Nữ'));
     await fireEvent.press(screen.getByRole('button', { name: 'Tạo tài khoản' }));
 
     expect(await screen.findByText('status:signedIn')).toBeOnTheScreen();
-    expect(api.calls[0].body).toEqual({ email: 'lan@x.vn', password: 'password123', displayName: 'Lan' });
+    expect(api.calls[0].body).toEqual({ email: 'lan@x.vn', password: 'password123', displayName: 'Lan', gender: 'FEMALE' });
   });
 
   test('sign out revokes refresh token and clears session', async () => {

@@ -67,6 +67,10 @@ public abstract class IntegrationTest {
         return mvc.perform(withBody(MockMvcRequestBuilders.put(url), token, body));
     }
 
+    protected void enableCycleTracking(String token) throws Exception {
+        put("/api/me/settings", token, Map.of("cycleTracking", true)).andExpect(status().isOk());
+    }
+
     protected ResultActions patch(String url, String token, Object body) throws Exception {
         return mvc.perform(withBody(MockMvcRequestBuilders.patch(url), token, body));
     }
@@ -79,9 +83,14 @@ public abstract class IntegrationTest {
         return json.readTree(result.andReturn().getResponse().getContentAsString());
     }
 
+    /** Mặc định tài khoản nữ để các test chu kỳ bật được theo dõi. */
     protected String register(String email, String displayName) throws Exception {
+        return register(email, displayName, "FEMALE");
+    }
+
+    protected String register(String email, String displayName, String gender) throws Exception {
         return read(post("/api/auth/register", null,
-                Map.of("email", email, "password", "password123", "displayName", displayName))
+                Map.of("email", email, "password", "password123", "displayName", displayName, "gender", gender))
                 .andExpect(status().isCreated()))
                 .get("accessToken").asText();
     }

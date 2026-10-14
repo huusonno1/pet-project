@@ -2,10 +2,13 @@ package com.coupleapp.moment.reminder;
 
 import com.coupleapp.moment.Moment;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.MonthDay;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.LongFunction;
 
 public final class Occurrences {
 
@@ -27,6 +30,36 @@ public final class Occurrences {
             }
         }
         return out;
+    }
+
+    /** Theo {@code recurrence} của kỷ niệm. MONTHLY tính từ ngày gốc nên 31 → 28/30/31 đúng từng tháng. */
+    public static List<Occurrence> recurring(Moment m, LocalDate from, LocalDate to) {
+        return switch (m.getRecurrence()) {
+            case NONE -> single(m, from, to);
+            case YEARLY -> yearly(m, from, to);
+            case WEEKLY -> stepped(m, from, to, k -> m.getOccursOn().plusWeeks(k));
+            case MONTHLY -> stepped(m, from, to, k -> m.getOccursOn().plusMonths(k));
+        };
+    }
+
+    private static List<Occurrence> stepped(Moment m, LocalDate from, LocalDate to, LongFunction<LocalDate> nth) {
+        List<Occurrence> out = new ArrayList<>();
+        for (long k = 0; ; k++) {
+            LocalDate d = nth.apply(k);
+            if (d.isAfter(to)) {
+                return out;
+            }
+            if (!d.isBefore(from)) {
+                out.add(new Occurrence(d, shiftedAt(m, d), m.getTitle()));
+            }
+        }
+    }
+
+    private static Instant shiftedAt(Moment m, LocalDate d) {
+        if (m.getOccursAt() == null) {
+            return null;
+        }
+        return m.getOccursAt().plus(Duration.ofDays(ChronoUnit.DAYS.between(m.getOccursOn(), d)));
     }
 
     public static boolean within(LocalDate d, LocalDate from, LocalDate to) {

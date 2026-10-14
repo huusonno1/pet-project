@@ -36,6 +36,7 @@ public class Preference {
     private String name;
     private String color;
     private String note;
+    private UUID imageMediaId;
 
     @Enumerated(EnumType.STRING)
     private Visibility visibility = Visibility.SHARED;

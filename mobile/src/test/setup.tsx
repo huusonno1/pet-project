@@ -1,0 +1,122 @@
+import 'react-native-gesture-handler/jestSetup';
+import { configure } from '@testing-library/react-native';
+
+// Màn hình có chuỗi request phụ thuộc nhau (me → couple → dữ liệu) — 1s mặc định dễ chập chờn
+configure({ asyncUtilTimeout: 5000 });
+
+jest.mock('react-native-safe-area-context', () => require('react-native-safe-area-context/jest/mock').default);
+jest.mock('react-native-worklets', () => require('react-native-worklets/lib/module/mock'));
+jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
+jest.mock('react-native-keyboard-controller', () => require('react-native-keyboard-controller/jest'));
+jest.mock('expo-linear-gradient', () => {
+  const { View } = require('react-native');
+  return { LinearGradient: View };
+});
+
+jest.mock('expo-secure-store', () => {
+  const store = new Map<string, string>();
+  return {
+    getItemAsync: jest.fn(async (key: string) => store.get(key) ?? null),
+    setItemAsync: jest.fn(async (key: string, value: string) => {
+      store.set(key, value);
+    }),
+    deleteItemAsync: jest.fn(async (key: string) => {
+      store.delete(key);
+    }),
+    __store: store,
+  };
+});
+
+jest.mock('expo-router', () => {
+  const React = require('react');
+  const Passthrough = ({ children }: { children?: unknown }) => children ?? null;
+  return {
+    router: {
+      push: jest.fn(),
+      replace: jest.fn(),
+      back: jest.fn(),
+      dismissTo: jest.fn(),
+      canGoBack: jest.fn(() => true),
+      setParams: jest.fn(),
+    },
+    useLocalSearchParams: jest.fn(() => ({})),
+    useFocusEffect: (effect: () => void | (() => void)) => React.useEffect(effect, []),
+    Stack: Object.assign(Passthrough, { Screen: () => null, Protected: Passthrough }),
+    Link: Passthrough,
+    Redirect: () => null,
+  };
+});
+
+jest.mock('expo-location', () => ({
+  requestForegroundPermissionsAsync: jest.fn(async () => ({
+    granted: true,
+    status: 'granted',
+    canAskAgain: true,
+    expires: 'never',
+  })),
+  getCurrentPositionAsync: jest.fn(async () => ({
+    coords: { latitude: 21.0285, longitude: 105.8542, accuracy: 20 },
+    timestamp: 0,
+  })),
+  Accuracy: { Balanced: 3 },
+}));
+
+jest.mock('expo-image-picker', () => ({
+  launchImageLibraryAsync: jest.fn(async () => ({ canceled: true, assets: null })),
+}));
+// Màn hình import gián tiếp upload.ts — mock module native để import không lỗi (upload-test tự mock lại chi tiết)
+jest.mock('expo-file-system', () => ({
+  File: jest.fn().mockImplementation((uri: string) => ({ uri, size: 1 })),
+  Paths: { cache: 'file:///cache' },
+}));
+jest.mock('expo-image-manipulator', () => ({ SaveFormat: { JPEG: 'jpeg' }, ImageManipulator: { manipulate: jest.fn() } }));
+jest.mock('expo/fetch', () => ({ fetch: jest.fn(async () => ({ ok: true, status: 200 })) }));
+
+jest.mock('expo-notifications', () => ({
+  setNotificationHandler: jest.fn(),
+  setNotificationChannelAsync: jest.fn(),
+  getPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  requestPermissionsAsync: jest.fn(async () => ({ status: 'granted' })),
+  getExpoPushTokenAsync: jest.fn(async () => ({ data: 'ExponentPushToken[test]' })),
+  getLastNotificationResponseAsync: jest.fn(async () => null),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  AndroidImportance: { MAX: 5 },
+}));
+jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn(async () => true) }));
+jest.mock('expo-device', () => ({ __esModule: true, isDevice: true }));
+
+beforeEach(() => {
+  (require('expo-secure-store').__store as Map<string, string>).clear();
+  jest.clearAllMocks();
+});
+
+jest.mock('@/features/notes/DrawPad', () => {
+  const { Pressable, Text } = require('react-native');
+  return {
+    DrawPad: ({ onChange, color }: { onChange: (s: unknown[]) => void; color: string }) => (
+      <Pressable accessibilityLabel="Vùng vẽ" onPress={() => onChange([{ color, points: [{ x: 1, y: 1 }, { x: 9, y: 9 }] }])}>
+        <Text>draw</Text>
+      </Pressable>
+    ),
+  };
+});
+jest.mock('@/features/notes/export-drawing', () => ({ exportDrawing: jest.fn(async () => 'file:///drawing.png') }));
+
+jest.mock('expo-camera', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  const CameraView = React.forwardRef((props: object, ref: React.Ref<unknown>) => {
+    React.useImperativeHandle(ref, () => ({ takePictureAsync: jest.fn(async () => ({ uri: 'file:///shot.jpg', width: 1000, height: 1000 })) }));
+    return <View testID="camera" {...props} />;
+  });
+  return { CameraView, useCameraPermissions: () => [{ granted: true, canAskAgain: true }, jest.fn()] };
+});
+jest.mock('@/features/create/EffectPreview', () => {
+  const { View } = require('react-native');
+  return { EffectPreview: () => <View testID="effect-preview" /> };
+});
+jest.mock('@/features/create/render-effects', () => ({ renderComposition: jest.fn(async (uri: string) => `${uri}#fx`) }));
+jest.mock('@/ui/ProgressRing', () => {
+  const { Text, View } = require('react-native');
+  return { ProgressRing: ({ label, sub }: { label: string; sub: string }) => <View><Text>{label}</Text><Text>{sub}</Text></View> };
+});

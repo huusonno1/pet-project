@@ -1,76 +1,73 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 
 import { useMe } from '@/features/account/api';
-import { useMoment, useMomentReminders, useSetReminderConfig } from '@/features/moments/api';
+import { useCouple } from '@/features/couple/api';
+import { useMoment, useSetReminderConfig } from '@/features/moments/api';
+import { TYPE_LABELS } from '@/features/moments/labels';
+import { recurrenceSummary } from '@/features/moments/occurrence';
 import { errorMessage } from '@/lib/api/client';
 import type { ReminderConfig } from '@/lib/api/types';
-import { formatDateTime } from '@/lib/format';
+import { AppText } from '@/ui/AppText';
+import { Avatar } from '@/ui/Avatar';
 import { Button } from '@/ui/Button';
 import { Card } from '@/ui/Card';
 import { Chip } from '@/ui/Chip';
-import { DateField } from '@/ui/DateField';
+import { DatePickerSheet } from '@/ui/DatePickerSheet';
 import { ErrorText } from '@/ui/ErrorText';
+import { IconCircle } from '@/ui/IconCircle';
+import { ListRow } from '@/ui/ListRow';
+import { PhotoTile } from '@/ui/PhotoTile';
 import { Screen } from '@/ui/Screen';
+import { Sheet } from '@/ui/Sheet';
 import { TextField } from '@/ui/TextField';
-import { colors, spacing } from '@/ui/theme';
+import { colors } from '@/ui/theme';
+import { TopBar } from '@/ui/TopBar';
 
 import { Choice, fromAudience, ownerOf, toAudience } from './audience';
-import { OFFSET_PRESETS, offsetLabel, parseMilestones, toggleOffset } from './offsets';
+import { MAX_OFFSETS, OFFSET_PRESETS, offsetLabel, parseMilestones, toggleOffset } from './offsets';
 
-const CHOICES: { value: Choice; label: string }[] = [
-  { value: 'me', label: 'Mình' },
-  { value: 'partner', label: 'Người ấy' },
-  { value: 'both', label: 'Cả hai' },
-];
+const QUICK = ['P0D', 'P1D', 'P3D', 'P7D', 'PT2H'];
 
 export default function ReminderConfigScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const moment = useMoment(id);
   const me = useMe();
-  const reminders = useMomentReminders(id);
+  const couple = useCouple();
   const save = useSetReminderConfig(id);
-
   const [choice, setChoice] = useState<Choice>('both');
   const [offsets, setOffsets] = useState<string[]>([]);
   const [sendAt, setSendAt] = useState('08:00');
-  const [yearly, setYearly] = useState(true);
   const [milestones, setMilestones] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [sheet, setSheet] = useState<'time' | 'more' | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!moment.data || !me.data || ready) return;
+    if (!moment.data || !me.data) return;
     const cfg = moment.data.effectiveReminderConfig;
-    setChoice(fromAudience(cfg.recipients ?? 'BOTH', me.data.id, ownerOf(moment.data)));
+    setChoice(moment.data.personal ? 'me' : fromAudience(cfg.recipients ?? 'BOTH', me.data.id, ownerOf(moment.data)));
     setOffsets(cfg.offsets ?? []);
     setSendAt(cfg.sendAt ?? '08:00');
-    setYearly(cfg.yearly ?? true);
     setMilestones(cfg.milestoneDays ? cfg.milestoneDays.join(', ') : '');
     setReady(true);
-  }, [moment.data, me.data, ready]);
+  }, [moment.data, me.data]);
 
-  if (!moment.data || !me.data || !ready) return <ActivityIndicator color={colors.primary} style={{ marginTop: 32 }} />;
-
+  if (!moment.data || !me.data || !ready) return <Screen><AppText color={colors.textMuted}>Đang tải…</AppText></Screen>;
   const m = moment.data;
+  const partnerName = couple.data?.partner.displayName ?? 'người ấy';
+  const locked = m.type === 'CYCLE' && m.subjectUserId !== me.data.id;
   const isAnniversary = m.type === 'ANNIVERSARY';
-  const lockedCycle = m.type === 'CYCLE' && m.subjectUserId !== me.data.id;
-  const presets = [...new Set([...OFFSET_PRESETS, ...offsets])];
 
-  async function onSave() {
-    const parsed = milestones.trim() ? parseMilestones(milestones) : { days: [], error: null };
-    if (parsed.error) {
-      setError(parsed.error);
-      return;
-    }
-    const config: ReminderConfig = {
-      recipients: toAudience(choice, me.data!.id, ownerOf(m)),
-      offsets,
-      sendAt,
-      yearly: isAnniversary ? yearly : null,
-      milestoneDays: isAnniversary && milestones.trim() ? parsed.days : null,
-    };
+  function toggle(iso: string) {
+    const r = toggleOffset(offsets, iso);
+    setOffsets(r.list);
+    setError(r.error);
+  }
+
+  async function submit(config: ReminderConfig | null) {
+    setError(null);
     try {
       await save.mutateAsync(config);
       router.back();
@@ -79,86 +76,94 @@ export default function ReminderConfigScreen() {
     }
   }
 
-  async function onReset() {
-    try {
-      await save.mutateAsync(null);
-      router.back();
-    } catch (e) {
-      setError(errorMessage(e));
-    }
+  function onSave() {
+    const parsed = isAnniversary && milestones.trim() ? parseMilestones(milestones) : { days: [], error: null };
+    if (parsed.error) return setError(parsed.error);
+    submit({
+      recipients: m.personal ? 'OWNER' : toAudience(choice, me.data!.id, ownerOf(m)),
+      offsets,
+      sendAt,
+      yearly: isAnniversary ? true : null,
+      milestoneDays: isAnniversary && milestones.trim() ? parsed.days : null,
+    });
   }
 
+  const target = choice === 'me' ? `Gửi cho ${me.data.displayName}` : choice === 'partner' ? `Gửi cho ${partnerName}` : 'Gửi cho cả hai';
+  const first = offsets[0];
+  const preview = first ? `${first === 'P0D' ? 'Hôm nay là' : `${offsetLabel(first).replace('Trước', 'Còn')} nữa là`} ${m.title} · ${target}` : 'Chưa chọn lần nhắc nào';
+  const recipients: { value: Choice; label: string }[] = [{ value: 'me', label: 'Mình' }, { value: 'partner', label: 'Người ấy' }, { value: 'both', label: 'Cả hai' }];
+
   return (
-    <Screen>
-      <Text style={styles.title}>{m.title}</Text>
-      {lockedCycle ? (
-        <Text style={styles.muted}>Chỉ người có chu kỳ được chỉnh nhắc nhở này.</Text>
-      ) : (
+    <Screen bottomPad={40}>
+      <TopBar title="Nhắc nhở" right={locked ? null : (
+        <Pressable accessibilityRole="button" accessibilityLabel="Lưu" onPress={onSave} hitSlop={8}><AppText variant="bodyStrong" color={colors.roseStrong}>Lưu</AppText></Pressable>
+      )} />
+      <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+        <PhotoTile uri={m.media[0]?.url} seed={m.id} style={{ width: 48, height: 48, borderRadius: 14 }} />
+        <View style={{ flex: 1 }}>
+          <AppText variant="bodyStrong">{m.title}</AppText>
+          <AppText variant="caption" color={colors.textMuted}>{TYPE_LABELS[m.type]} · {isAnniversary ? 'theo mốc ngày yêu' : recurrenceSummary(m.recurrence, m.occursOn).toLowerCase()}</AppText>
+        </View>
+      </Card>
+      {locked ? <AppText color={colors.textMuted}>Chỉ người theo dõi chu kỳ mới đổi được nhắc nhở này.</AppText> : (
         <>
-          <Text style={styles.label}>Nhắc cho</Text>
-          <View style={styles.chips}>
-            {CHOICES.map((c) => (
-              <Chip key={c.value} label={c.label} selected={choice === c.value} onPress={() => setChoice(c.value)} />
-            ))}
-          </View>
-
-          <Text style={styles.label}>Nhắc trước (tối đa 5)</Text>
-          <View style={styles.chips}>
-            {presets.map((iso) => (
-              <Chip
-                key={iso}
-                label={offsetLabel(iso)}
-                selected={offsets.includes(iso)}
-                onPress={() => {
-                  const next = toggleOffset(offsets, iso);
-                  setOffsets(next.list);
-                  setError(next.error);
-                }}
-              />
-            ))}
-          </View>
-
-          <DateField label="Giờ gửi (với nhắc theo ngày)" mode="time" value={sendAt} onChange={setSendAt} />
-
-          {isAnniversary && (
+          {m.personal ? (
+            <AppText variant="caption" color={colors.textMuted}>Kỷ niệm riêng — chỉ nhắc cho bạn</AppText>
+          ) : (
             <>
-              <View style={styles.switchRow}>
-                <Text style={styles.label}>Nhắc mỗi năm tròn</Text>
-                <Switch accessibilityLabel="Nhắc mỗi năm tròn" value={yearly} onValueChange={setYearly} trackColor={{ true: colors.primary }} />
+              <AppText variant="micro" color={colors.textMuted}>AI SẼ NHẬN NHẮC?</AppText>
+              <View accessibilityRole="radiogroup" style={{ flexDirection: 'row', gap: 10 }}>
+                {recipients.map((r) => {
+                  const on = choice === r.value;
+                  return (
+                    <Pressable key={r.value} accessibilityRole="radio" accessibilityLabel={r.label} accessibilityState={{ checked: on }} onPress={() => setChoice(r.value)}
+                      style={{ flex: 1, alignItems: 'center', gap: 8, paddingVertical: 14, borderRadius: 24, borderWidth: 2, borderColor: on ? colors.rose : 'transparent', backgroundColor: on ? colors.roseSoft : colors.surface }}>
+                      <View style={{ flexDirection: 'row' }}>
+                        {r.value !== 'partner' ? <Avatar name={me.data!.displayName} tone="rose" size={28} ring /> : null}
+                        {r.value !== 'me' ? <View style={{ marginLeft: r.value === 'both' ? -8 : 0 }}><Avatar name={partnerName} tone="lavender" size={28} ring /></View> : null}
+                      </View>
+                      <AppText variant="captionStrong" color={on ? colors.roseStrong : colors.text}>{r.label}</AppText>
+                    </Pressable>
+                  );
+                })}
               </View>
-              <TextField
-                label="Mốc ngày (cách nhau bởi dấu phẩy)"
-                value={milestones}
-                onChangeText={setMilestones}
-                placeholder="Mặc định: 100, 200, 300, 500, 1000, mỗi 500 ngày"
-                keyboardType="numbers-and-punctuation"
-              />
             </>
           )}
-
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <AppText variant="micro" color={colors.textMuted}>NHẮC TRƯỚC</AppText>
+            <AppText variant="micro" color={colors.roseStrong}>{offsets.length}/{MAX_OFFSETS} đã chọn</AppText>
+          </View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {[...new Set([...QUICK, ...offsets])].map((o) => <Chip key={o} label={offsetLabel(o)} selected={offsets.includes(o)} onPress={() => toggle(o)} />)}
+            <Chip label="+ Tuỳ chỉnh" selected={false} onPress={() => setSheet('more')} />
+          </View>
+          <Card style={{ paddingVertical: 4 }}>
+            <ListRow icon="clock" iconBg={colors.peachSoft} iconColor={colors.peachInk} title="Giờ gửi" subtitle="Cho các lần nhắc theo ngày"
+              right={<AppText variant="bodyStrong" color={colors.roseStrong}>{sendAt}</AppText>} onPress={() => setSheet('time')} />
+          </Card>
+          {isAnniversary ? (
+            <TextField label="Mốc ngày (cách nhau bằng dấu phẩy)" value={milestones} onChangeText={setMilestones} placeholder="100, 200, 365, 520, 1000" keyboardType="numbers-and-punctuation" />
+          ) : null}
+          <AppText variant="micro" color={colors.textMuted}>XEM TRƯỚC THÔNG BÁO</AppText>
+          <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <IconCircle name="heartFilled" bg={colors.roseStrong} color={colors.white} size={40} />
+            <View style={{ flex: 1 }}>
+              <AppText variant="bodyStrong">{m.title} sắp tới</AppText>
+              <AppText variant="caption" color={colors.textMuted}>{preview}</AppText>
+            </View>
+          </Card>
           <ErrorText message={error} />
-          <Button title="Lưu" onPress={onSave} loading={save.isPending} />
-          <Button title="Khôi phục mặc định" variant="secondary" onPress={onReset} />
+          <Button title="Khôi phục mặc định" variant="ghost" onPress={() => submit(null)} />
         </>
       )}
-
-      <Card style={{ marginTop: spacing.lg }}>
-        <Text style={styles.label}>Nhắc nhở sắp tới của bạn</Text>
-        {(reminders.data ?? []).map((r) => (
-          <Text key={r.id} style={styles.muted}>
-            {formatDateTime(r.fireAt)} — {r.body}
-          </Text>
-        ))}
-        {reminders.data?.length === 0 && <Text style={styles.muted}>Không có.</Text>}
-      </Card>
+      <DatePickerSheet visible={sheet === 'time'} mode="time" title="Giờ gửi nhắc" value={m.occursOn} time={sendAt}
+        onClose={() => setSheet(null)} onConfirm={(_, t) => { if (t) setSendAt(t); setSheet(null); }} />
+      <Sheet visible={sheet === 'more'} onClose={() => setSheet(null)} title="Nhắc trước">
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {OFFSET_PRESETS.map((o) => <Chip key={o} label={offsetLabel(o)} selected={offsets.includes(o)} onPress={() => toggle(o)} />)}
+        </View>
+        <Button title="Xong" onPress={() => setSheet(null)} />
+      </Sheet>
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  title: { fontSize: 18, fontWeight: '700', color: colors.text, marginBottom: spacing.md },
-  label: { color: colors.text, fontWeight: '500', marginBottom: spacing.xs },
-  muted: { color: colors.muted, marginBottom: spacing.xs },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.sm },
-  switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.md },
-});

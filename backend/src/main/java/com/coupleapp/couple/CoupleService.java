@@ -8,7 +8,8 @@ import com.coupleapp.couple.CoupleDtos.PartnerDto;
 import com.coupleapp.couple.InviteService.Invite;
 import com.coupleapp.couple.InviteService.InvitePayload;
 import com.coupleapp.user.User;
-import com.coupleapp.user.UserRepository;
+import com.coupleapp.user.UserDirectory;
+import com.coupleapp.user.UserDtos.UserCard;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -27,7 +28,7 @@ public class CoupleService {
     private final CoupleMemberRepository members;
     private final CoupleAccess access;
     private final InviteService invites;
-    private final UserRepository users;
+    private final UserDirectory directory;
     private final ApplicationEventPublisher events;
     private final Clock clock;
 
@@ -52,21 +53,31 @@ public class CoupleService {
         }
         invites.claim(code).orElseThrow(CoupleService::invalidInvite);
         try {
+            return createCouple(payload.inviterId(), joinerId, startedDatingOn);
+        } catch (RuntimeException e) {
+            invites.restore(code, payload);
+            throw e;
+        }
+    }
+
+    /** Tạo cặp đôi cho hai người chưa có cặp ACTIVE (dùng chung cho mã mời và lời mời theo ID). */
+    @Transactional
+    public CoupleResponse createCouple(UUID inviterId, UUID joinerId, LocalDate startedDatingOn) {
+        if (access.findActive(joinerId).isPresent() || access.findActive(inviterId).isPresent()) {
+            throw alreadyPaired();
+        }
+        try {
             Instant now = clock.instant();
             Couple couple = new Couple();
             couple.setStartedDatingOn(startedDatingOn);
             couple.setCreatedAt(now);
             couples.saveAndFlush(couple);
-            members.saveAndFlush(new CoupleMember(couple.getId(), payload.inviterId(), now));
+            members.saveAndFlush(new CoupleMember(couple.getId(), inviterId, now));
             members.saveAndFlush(new CoupleMember(couple.getId(), joinerId, now));
-            events.publishEvent(new CouplePairedEvent(couple.getId(), payload.inviterId(), joinerId, startedDatingOn));
-            return toResponse(couple, payload.inviterId());
+            events.publishEvent(new CouplePairedEvent(couple.getId(), inviterId, joinerId, startedDatingOn));
+            return toResponse(couple, inviterId);
         } catch (DataIntegrityViolationException e) {
-            invites.restore(code, payload);
             throw alreadyPaired();
-        } catch (RuntimeException e) {
-            invites.restore(code, payload);
-            throw e;
         }
     }
 
@@ -89,9 +100,10 @@ public class CoupleService {
     }
 
     private CoupleResponse toResponse(Couple couple, UUID partnerId) {
-        User partner = users.findById(partnerId).orElseThrow(ApiException::notFound);
+        UserCard card = directory.card(partnerId);
+        LocalDate birthday = directory.find(partnerId).map(User::getBirthday).orElse(null);
         return new CoupleResponse(couple.getId(), couple.getStartedDatingOn(), couple.getCreatedAt(),
-                new PartnerDto(partner.getId(), partner.getDisplayName()));
+                new PartnerDto(card.id(), card.displayName(), card.handle(), birthday, card.avatarUrl(), card.gender()));
     }
 
     private static ApiException invalidInvite() {

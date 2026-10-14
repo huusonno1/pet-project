@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 
 export function createQueryClient() {
-  return new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000 } } });
+  return new QueryClient({ defaultOptions: { queries: { retry: 1, staleTime: 30_000, refetchInterval: 60_000 } } });
 }
 
 export const keys = {
@@ -16,4 +16,9 @@ export const keys = {
   prediction: (userId: string) => ['cycle', 'prediction', userId] as const,
   traits: (userId: string) => ['traits', userId] as const,
   catalog: ['traits', 'catalog'] as const,
+  notes: ['notes'] as const,
+  latestNote: ['notes', 'latest'] as const,
+  inbox: ['inbox'] as const,
+  unread: ['inbox', 'unread'] as const,
+  pairRequests: ['pair', 'requests'] as const,
 };
