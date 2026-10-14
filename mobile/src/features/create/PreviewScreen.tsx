@@ -1,7 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useCouple } from '@/features/couple/api';
@@ -12,6 +11,7 @@ import { AppText } from '@/ui/AppText';
 import { Button } from '@/ui/Button';
 import { ErrorText } from '@/ui/ErrorText';
 import { Icon, IconName } from '@/ui/Icon';
+import { KeyboardScrollView } from '@/ui/KeyboardScrollView';
 import { colors, fonts } from '@/ui/theme';
 import { TopBar } from '@/ui/TopBar';
 
@@ -60,7 +60,7 @@ export default function PreviewScreen() {
   }
 
   return (
-    <KeyboardAwareScrollView style={{ flex: 1, backgroundColor: colors.bg }} keyboardShouldPersistTaps="handled" bottomOffset={24}
+    <KeyboardScrollView style={{ backgroundColor: colors.bg }}
       contentContainerStyle={{ paddingTop: insets.top + 8, paddingHorizontal: 16, paddingBottom: 24, gap: 14 }}>
       <TopBar backIcon="close" title={partner ? `Chia sẻ với ${partner.displayName}` : 'Xem trước'} />
       {uri ? <View style={{ alignSelf: 'center' }}><EffectPreview uri={uri} composition={capture} size={width - 32} /></View> : null}
@@ -102,7 +102,7 @@ export default function PreviewScreen() {
       ) : null}
       <ErrorText message={error} />
       <ClassifySheet visible={classifyOpen} onClose={() => setClassifyOpen(false)} thumbUri={uri} />
-    </KeyboardAwareScrollView>
+    </KeyboardScrollView>
   );
 }
 

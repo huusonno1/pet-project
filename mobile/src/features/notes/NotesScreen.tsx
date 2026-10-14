@@ -1,7 +1,7 @@
 import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
-import { KeyboardAvoidingView } from 'react-native-keyboard-controller';
+import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useMe } from '@/features/account/api';
@@ -30,6 +30,8 @@ const QUICK = ['Nhớ quá', 'Ăn gì chưa?', 'Yêu nhiều'];
 
 export default function NotesScreen() {
   const insets = useSafeAreaInsets();
+  // Bàn phím mở thì ô soạn nằm sát bàn phím, không chừa vùng home indicator/thanh điều hướng nữa.
+  const keyboardOpen = useKeyboardState((s) => s.isVisible);
   const me = useMe();
   const couple = useCouple();
   const notes = useLoveNotes();
@@ -70,7 +72,7 @@ export default function NotesScreen() {
           <AppText color={colors.textMuted} style={{ textAlign: 'center' }}>Chưa có lời nhắn nào. Gửi câu đầu tiên nhé!</AppText>
         ) : null}
       </ScrollView>
-      <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, 12) + 12 }]}>
+      <View style={[styles.composer, { paddingBottom: keyboardOpen ? 10 : Math.max(insets.bottom, 12) + 12 }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
           {QUICK.map((q) => <Chip key={q} label={q} selected={false} onPress={() => sendText(q)} />)}
         </ScrollView>
