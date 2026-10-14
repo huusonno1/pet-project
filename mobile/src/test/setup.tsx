@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler/jestSetup';
 import { configure } from '@testing-library/react-native';
 
 // Màn hình có chuỗi request phụ thuộc nhau (me → couple → dữ liệu) — 1s mặc định dễ chập chờn

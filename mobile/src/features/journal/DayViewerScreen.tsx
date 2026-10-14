@@ -17,6 +17,7 @@ import { colors, shadow } from '@/ui/theme';
 import { TopBar } from '@/ui/TopBar';
 
 import { Position, step } from './group';
+import { SwipeDeck } from './SwipeDeck';
 
 export default function DayViewerScreen() {
   const { date } = useLocalSearchParams<{ date: string }>();
@@ -27,7 +28,9 @@ export default function DayViewerScreen() {
   const couple = useCouple();
   const [pos, setPos] = useState<Position>({ item: 0, photo: 0 });
   const items = (moments.data ?? []).filter((m) => m.occursOn === date && m.type !== 'CYCLE').sort((a, b) => a.createdAt.localeCompare(b.createdAt));
-  const cardW = width - 84;
+  // Ảnh rộng gần hết màn (chừa 16px mỗi bên), tỉ lệ 4:5.
+  const cardW = width - 32;
+  const cardH = Math.min(Math.round(cardW * 1.25), 480);
 
   if (items.length === 0) {
     return (
@@ -40,9 +43,41 @@ export default function DayViewerScreen() {
 
   const m = items[Math.min(pos.item, items.length - 1)];
   const media = m.media[pos.photo];
-  const mood = moodLabel(m.details.mood);
-  const author = m.createdBy === me.data?.id ? me.data?.displayName : couple.data?.partner.displayName ?? '';
-  const time = formatTime(m.occursAt ?? m.createdAt);
+  const prevPos = step(items, pos, -1);
+  const nextPos = step(items, pos, 1);
+  const prev = prevPos === pos ? null : prevPos;
+  const next = nextPos === pos ? null : nextPos;
+
+  function renderCard(p: Position, interactive: boolean) {
+    const cm = items[p.item];
+    const cmedia = cm.media[p.photo];
+    const cmood = moodLabel(cm.details.mood);
+    const cauthor = cm.createdBy === me.data?.id ? me.data?.displayName : couple.data?.partner.displayName ?? '';
+    return (
+      <View style={[{ flex: 1, borderRadius: 28, overflow: 'hidden', backgroundColor: colors.surface }, shadow.raised]}>
+        {cmedia ? (
+          <PhotoTile uri={cmedia.url} seed={cm.id} style={{ flex: 1, borderRadius: 0 }} />
+        ) : (
+          <View style={{ flex: 1, backgroundColor: colors.lavender, padding: 28, justifyContent: 'center', gap: 14 }}>
+            <Icon name="quote" size={34} color={colors.lavenderInk} />
+            <AppText variant="h2">{cm.message || cm.title}</AppText>
+          </View>
+        )}
+        <View style={styles.typeChip}><AppText variant="captionStrong" color={colors.roseStrong} style={{ fontSize: 12 }}>{TYPE_LABELS[cm.type]}{cmood ? ` · ${cmood}` : ''}</AppText></View>
+        {cm.media.length > 1 ? <View style={styles.photoCount}><AppText variant="micro" color={colors.white} style={{ letterSpacing: 0 }}>Ảnh {p.photo + 1}/{cm.media.length}</AppText></View> : null}
+        <View style={styles.who}>
+          <Avatar name={cauthor || '?'} tone={cm.createdBy === me.data?.id ? 'rose' : 'lavender'} size={26} />
+          <AppText variant="captionStrong">{cauthor} · {formatTime(cm.occursAt ?? cm.createdAt)}</AppText>
+        </View>
+        {interactive ? (
+          <>
+            <Pressable accessibilityRole="button" accessibilityLabel="Ảnh hoặc kỷ niệm trước" onPress={() => setPos(step(items, pos, -1))} style={[StyleSheet.absoluteFill, { right: '60%' }]} />
+            <Pressable accessibilityRole="button" accessibilityLabel="Ảnh hoặc kỷ niệm tiếp theo" onPress={() => setPos(step(items, pos, 1))} style={[StyleSheet.absoluteFill, { left: '40%' }]} />
+          </>
+        ) : null}
+      </View>
+    );
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top + 8 }}>
@@ -55,25 +90,10 @@ export default function DayViewerScreen() {
         {items.map((it, i) => <View key={it.id} style={[styles.seg, { backgroundColor: i <= pos.item ? colors.rose : colors.line }]} />)}
       </View>
 
-      <View style={{ height: 400, marginTop: 10, alignItems: 'center' }}>
-        <View style={[{ width: cardW, height: 400, borderRadius: 28, overflow: 'hidden' }, shadow.raised]}>
-          {media ? (
-            <PhotoTile uri={media.url} seed={m.id} style={{ flex: 1, borderRadius: 0 }} />
-          ) : (
-            <View style={{ flex: 1, backgroundColor: colors.lavender, padding: 28, justifyContent: 'center', gap: 14 }}>
-              <Icon name="quote" size={34} color={colors.lavenderInk} />
-              <AppText variant="h2">{m.message || m.title}</AppText>
-            </View>
-          )}
-          <View style={styles.typeChip}><AppText variant="captionStrong" color={colors.roseStrong} style={{ fontSize: 12 }}>{TYPE_LABELS[m.type]}{mood ? ` · ${mood}` : ''}</AppText></View>
-          {m.media.length > 1 ? <View style={styles.photoCount}><AppText variant="micro" color={colors.white} style={{ letterSpacing: 0 }}>Ảnh {pos.photo + 1}/{m.media.length}</AppText></View> : null}
-          <View style={styles.who}>
-            <Avatar name={author || '?'} tone={m.createdBy === me.data?.id ? 'rose' : 'lavender'} size={26} />
-            <AppText variant="captionStrong">{author} · {time}</AppText>
-          </View>
-          <Pressable accessibilityRole="button" accessibilityLabel="Ảnh hoặc kỷ niệm trước" onPress={() => setPos(step(items, pos, -1))} style={[StyleSheet.absoluteFill, { right: '60%' }]} />
-          <Pressable accessibilityRole="button" accessibilityLabel="Ảnh hoặc kỷ niệm tiếp theo" onPress={() => setPos(step(items, pos, 1))} style={[StyleSheet.absoluteFill, { left: '40%' }]} />
-        </View>
+      <View style={{ marginTop: 10, alignItems: 'center' }}>
+        <SwipeDeck width={cardW} height={cardH} cardKey={`${pos.item}-${pos.photo}`}
+          card={renderCard(pos, true)} prevCard={prev ? renderCard(prev, false) : null} nextCard={next ? renderCard(next, false) : null}
+          onPrev={() => setPos(step(items, pos, -1))} onNext={() => setPos(step(items, pos, 1))} />
       </View>
 
       <View style={{ paddingHorizontal: 24, gap: 6, marginTop: 14 }}>

@@ -42,13 +42,30 @@ export function JournalMonth({ moments, initial }: { moments: Moment[]; initial?
           return (
             <View key={c.iso} style={styles.cell}>
               <Pressable accessibilityRole="button" accessibilityLabel={`Ngày ${c.day}${n ? `, ${n} kỷ niệm` : ''}`} accessibilityState={{ selected: on }}
-                onPress={() => setSelected(c.iso!)}
-                // Viền luôn có (chỉ đổi màu/kiểu): Android gỡ viền khỏi view bo góc + overflow hidden thì số trong ô biến mất.
-                style={[styles.day, gift && { backgroundColor: colors.peachSoft }, n > 0 && !cover && { backgroundColor: gradientFor(c.iso)[0] },
+                onPress={() => {
+                  setSelected(c.iso!);
+                  // Ngày đã có kỷ niệm → mở thẳng màn xem trong ngày.
+                  if (n > 0) router.push(`/journal/${c.iso}`);
+                }}
+                style={{ alignItems: 'center', gap: 2 }}>
+                {/* Viền luôn có (chỉ đổi màu/kiểu): Android gỡ viền khỏi view bo góc + overflow hidden thì nội dung biến mất. */}
+                <View style={[styles.slot, gift && { backgroundColor: colors.peachSoft }, n > 0 && !cover && { backgroundColor: gradientFor(c.iso)[0] },
                   { borderColor: on || c.iso === todayIso ? colors.roseStrong : 'transparent', borderStyle: c.iso === todayIso && !on ? 'dashed' : 'solid' }]}>
-                {cover ? <PhotoTile uri={cover.url} seed={c.iso} style={StyleSheet.absoluteFill} /> : null}
-                <AppText variant={n ? 'bodyStrong' : 'body'} color={c.weekday === 6 && !n ? colors.roseStrong : colors.text}>{c.day}</AppText>
-                {n > 1 ? <AppText variant="micro" style={{ letterSpacing: 0 }}>{'•'.repeat(Math.min(n, 3))}</AppText> : null}
+                  {cover ? (
+                    <PhotoTile uri={cover.url} seed={c.iso} style={StyleSheet.absoluteFill} />
+                  ) : (
+                    <AppText variant={n ? 'bodyStrong' : 'body'} color={c.weekday === 6 && !n ? colors.roseStrong : colors.text}>{c.day}</AppText>
+                  )}
+                  {cover && n > 1 ? <View style={styles.badge}><AppText variant="micro" color={colors.white} style={{ letterSpacing: 0, fontSize: 10 }}>{n}</AppText></View> : null}
+                </View>
+                {/* Ngày có ảnh: số nằm dưới ảnh thay vì đè lên ảnh. */}
+                {cover ? (
+                  <AppText variant="captionStrong" color={on ? colors.roseStrong : colors.text} style={{ fontSize: 12, lineHeight: 15 }}>{c.day}</AppText>
+                ) : n > 1 ? (
+                  <AppText variant="micro" style={{ letterSpacing: 0, lineHeight: 15 }}>{'•'.repeat(Math.min(n, 3))}</AppText>
+                ) : (
+                  <View style={{ height: 15 }} />
+                )}
               </Pressable>
             </View>
           );
@@ -81,7 +98,8 @@ export function JournalMonth({ moments, initial }: { moments: Moment[]; initial?
 const styles = StyleSheet.create({
   arrow: { width: 40, height: 40, borderRadius: 20, borderWidth: 1, borderColor: colors.line, backgroundColor: colors.surface, alignItems: 'center', justifyContent: 'center' },
   cellW: { width: `${100 / 7}%`, textAlign: 'center', paddingBottom: 6 },
-  cell: { width: `${100 / 7}%`, height: 50, alignItems: 'center', justifyContent: 'center' },
-  day: { width: 40, height: 46, borderRadius: 14, borderWidth: 2, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  cell: { width: `${100 / 7}%`, height: 62, alignItems: 'center', justifyContent: 'center' },
+  slot: { width: 40, height: 40, borderRadius: 13, borderWidth: 2, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+  badge: { position: 'absolute', right: 2, top: 2, minWidth: 15, height: 15, borderRadius: 8, paddingHorizontal: 3, backgroundColor: colors.roseStrong, alignItems: 'center', justifyContent: 'center' },
   empty: { padding: 16, borderRadius: 20, borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.line, textAlign: 'center' },
 });
