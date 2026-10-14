@@ -1,9 +1,11 @@
 import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
+import { useKeyboardState } from 'react-native-keyboard-controller';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from './AppText';
 import { colors } from './theme';
+import { useKeyboardInset } from './useKeyboardInset';
 
 type Props = {
   visible: boolean;
@@ -18,10 +20,11 @@ type Props = {
 export function Sheet({ visible, onClose, title, subtitle, right, children, testID }: Props) {
   const insets = useSafeAreaInsets();
   const keyboardOpen = useKeyboardState((s) => s.isVisible);
+  const keyboardInset = useKeyboardInset();
   return (
     <Modal visible={visible} transparent animationType="slide" statusBarTranslucent navigationBarTranslucent onRequestClose={onClose}>
-      {/* Bàn phím mở → đẩy cả sheet lên vừa khít trên bàn phím (chỉ xử lý một lần, không chèn thêm khoảng trắng). */}
-      <KeyboardAvoidingView behavior="padding" style={styles.root}>
+      {/* Bàn phím mở → đẩy sheet lên đúng bằng chiều cao bàn phím, nằm sát mép trên bàn phím. */}
+      <Animated.View style={[styles.root, keyboardInset]}>
         <Pressable testID="sheet-scrim" accessibilityLabel="Đóng" style={StyleSheet.absoluteFill} onPress={onClose} />
         <View testID={testID} style={[styles.sheet, { paddingBottom: keyboardOpen ? 12 : Math.max(insets.bottom, 16) + 18 }]}>
           <View style={styles.grabber} />
@@ -38,7 +41,7 @@ export function Sheet({ visible, onClose, title, subtitle, right, children, test
             {children}
           </ScrollView>
         </View>
-      </KeyboardAvoidingView>
+      </Animated.View>
     </Modal>
   );
 }

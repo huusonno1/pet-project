@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, TextInput, useWindowDimensions, View } from 'react-native';
-import { KeyboardAvoidingView, useKeyboardState } from 'react-native-keyboard-controller';
+import { useKeyboardState } from 'react-native-keyboard-controller';
+import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useMe } from '@/features/account/api';
@@ -19,6 +20,7 @@ import { Icon } from '@/ui/Icon';
 import { Sheet } from '@/ui/Sheet';
 import { colors, fonts } from '@/ui/theme';
 import { TopBar } from '@/ui/TopBar';
+import { useKeyboardInset } from '@/ui/useKeyboardInset';
 
 import { useLoveNotes, useMarkNoteSeen, useSendNote } from './api';
 import { DrawPad } from './DrawPad';
@@ -32,6 +34,7 @@ export default function NotesScreen() {
   const insets = useSafeAreaInsets();
   // Bàn phím mở thì ô soạn nằm sát bàn phím, không chừa vùng home indicator/thanh điều hướng nữa.
   const keyboardOpen = useKeyboardState((s) => s.isVisible);
+  const keyboardInset = useKeyboardInset();
   const me = useMe();
   const couple = useCouple();
   const notes = useLoveNotes();
@@ -61,7 +64,7 @@ export default function NotesScreen() {
   }
 
   return (
-    <KeyboardAvoidingView behavior="padding" style={{ flex: 1, backgroundColor: colors.bg }}>
+    <Animated.View style={[{ flex: 1, backgroundColor: colors.bg }, keyboardInset]}>
       <View style={{ paddingTop: insets.top + 8, paddingHorizontal: 20 }}>
         <TopBar title={`Lời nhắn với ${partnerName}`} />
         <AppText variant="caption" color={colors.textMuted} style={{ marginLeft: 56 }}>Gửi kèm thông báo đến điện thoại {partnerName}</AppText>
@@ -89,7 +92,7 @@ export default function NotesScreen() {
         </View>
       </View>
       <DrawSheet visible={drawOpen} onClose={() => setDrawOpen(false)} partnerName={partnerName} />
-    </KeyboardAvoidingView>
+    </Animated.View>
   );
 }
 

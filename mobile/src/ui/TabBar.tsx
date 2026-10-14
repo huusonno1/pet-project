@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useKeyboardState } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppText } from './AppText';
@@ -17,6 +18,9 @@ const TABS: { name: TabName; label: string; icon: IconName }[] = [
 
 export function TabBar({ active, onSelect }: { active: string; onSelect: (name: TabName) => void }) {
   const insets = useSafeAreaInsets();
+  // Đang gõ thì ẩn tab bar: nội dung tab chạm đáy màn hình, bàn phím đẩy lên vừa khít (như các app khác).
+  const keyboardOpen = useKeyboardState((s) => s.isVisible);
+  if (keyboardOpen) return null;
   return (
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       {TABS.map((t) => {
