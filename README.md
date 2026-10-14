@@ -13,16 +13,25 @@ Thiết kế: `docs/superpowers/specs/2026-10-10-couple-app-design.md`.
 
 - JDK 21, Docker (+ Docker Compose), Node.js 20+
 
-## Chạy dev
+## Chạy dev (test trên điện thoại thật)
+
+Mở 2 terminal ở thư mục gốc dự án. Máy tính và 2 điện thoại phải **cùng Wi-Fi**.
 
 ```bash
-docker compose up -d                 # Postgres :5432, Redis :6379, MinIO :9000 (console :9001)
-cd backend && ./dev.sh               # API :8080 (tự đặt URL ảnh theo IP LAN)
-cd mobile && npx expo start          # quét QR bằng Expo Go / development build
+# Terminal 1 — backend: bật Docker (Postgres/Redis/MinIO) + API :8080
+./backend/dev.sh
+
+# Terminal 2 — mobile: Expo, quét QR bằng Expo Go
+./mobile/dev.sh
 ```
 
-Khi test trên điện thoại thật, đặt `APP_STORAGE_PUBLIC_ENDPOINT=http://<IP-LAN-máy-dev>:9000`
-để URL ảnh presigned truy cập được từ điện thoại.
+- Hai script tự lấy IP LAN hiện tại (IP đổi khi đổi Wi-Fi, không cần sửa `.env`). Sai IP thì ép: `LAN_IP=192.168.x.x ./backend/dev.sh`.
+- `backend/dev.sh` tự dùng JDK 21 ở `~/.jdks/temurin-21` (java mặc định của máy là 17) và đặt
+  `APP_STORAGE_PUBLIC_ENDPOINT=http://<IP-LAN>:9000` — chạy `./mvnw spring-boot:run` trơn thì URL ảnh là localhost → điện thoại tải ảnh lỗi.
+- Đợi Terminal 1 in `Started CoupleApplication` rồi mới mở app. Sửa code mobile thì app tự reload; muốn reload tay: lắc máy → Reload (hoặc bấm `r` ở Terminal 2).
+- **Android:** Expo Go → Scan QR. **iPhone:** Camera quét QR; Expo Go phải đăng nhập cùng tài khoản với `npx expo login` trên máy.
+- Tài khoản test (đã ghép đôi sẵn): `lan@test.vn` / `minh@test.vn`, mật khẩu `password123`.
+- Dừng: `Ctrl+C` ở cả 2 terminal, rồi `docker compose stop` (giữ dữ liệu). `docker compose down -v` sẽ **xoá sạch DB**.
 
 ## Test
 
@@ -34,14 +43,10 @@ cd backend && ./mvnw test            # cần Docker (Testcontainers)
 
 ```bash
 cd mobile
-cp .env.example .env        # sửa EXPO_PUBLIC_API_URL thành http://<IP-LAN-máy-dev>:8080
-npm install
-npx expo start              # quét QR bằng Expo Go
+npm install                 # lần đầu
+./dev.sh                    # = Terminal 2 ở trên
 npm test                    # unit/screen tests
 ```
-
-Chạy backend cho điện thoại thật bằng `backend/dev.sh` (tự đặt `APP_STORAGE_PUBLIC_ENDPOINT=http://<IP-LAN>:9000`;
-nếu chạy `./mvnw spring-boot:run` trơn thì URL ảnh là localhost → điện thoại tải ảnh lên sẽ lỗi).
 
 **Expo Go** chạy được mọi thứ trừ **push notification trên Android**. Để nhận push cần development build:
 
